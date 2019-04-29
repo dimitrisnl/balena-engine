@@ -3,8 +3,8 @@ package a2o // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
 import (
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	errors "golang.org/x/xerrors"
 )
 
 func checkAufsExists(root string) error {
@@ -34,5 +34,5 @@ func checkOverlay2NotExists(root string) error {
 	if fi.IsDir() {
 		return ErrOverlay2Exists
 	}
-	return errors.Errorf("%s exists and is not a directory", root)
+	return errors.Errorf("%q exists and is not a directory", root)
 }

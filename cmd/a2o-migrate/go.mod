@@ -4,7 +4,8 @@ go 1.12
 
 require (
 	github.com/google/go-cmp v0.2.0 // indirect
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.4.1
+	golang.org/x/xerrors v0.0.0-20190410155217-1f06c39b4373
 	gotest.tools v2.2.0+incompatible
 )

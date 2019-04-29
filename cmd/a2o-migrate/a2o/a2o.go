@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	errors "golang.org/x/xerrors"
 )
 
 const (
@@ -36,7 +36,7 @@ func AuFSToOverlay2() error {
 
 	err = filepath.Walk(aufsRoot, filepath.WalkFunc(processor))
 	if err != nil {
-		return errors.Wrap(err, "failed to walk aufs tree")
+		return errors.Errorf("failed to walk aufs tree: %w", err)
 	}
 
 	logrus.Debug("finished a2o migration")
