@@ -18,11 +18,15 @@ var ( // auto generated on build
 var ( // flag values
 	debug              = false
 	printVersion       = false
+	modeAufsToOverlay2 = true
+	modeOverlay2ToAufs = false
 )
 
 func main() {
 	flag.BoolVar(&debug, "debug", false, "enable debug logging")
 	flag.BoolVar(&printVersion, "version", false, "print version")
+	flag.BoolVar(&modeAufsToOverlay2, "aufs-to-overlay", true, "migrate from aufs to overlay2")
+	flag.BoolVar(&modeOverlay2ToAufs, "overlay-to-aufs", false, "migrate back from overlay2 to aufs")
 	flag.Parse()
 
 	if printVersion {
@@ -34,8 +38,14 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	if err := a2o.AuFSToOverlay2(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+	switch {
+	case modeAufsToOverlay2:
+		if err := a2o.AuFSToOverlay2(); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			os.Exit(1)
+		}
+	case modeOverlay2ToAufs:
+		fmt.Fprintf(os.Stderr, "error: not implemented!")
 		os.Exit(1)
 	}
 
