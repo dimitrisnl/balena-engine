@@ -87,7 +87,6 @@ func AuFSToOverlay2() error {
 
 					logrus.Debug("discovered whiteout-meta marker")
 					// other whiteout metadata
-					// TODO(robertgzr) keep this as well for rollback
 					layer.Meta = append(layer.Meta, Meta{
 						Path: absPath,
 						Type: MetaOther,

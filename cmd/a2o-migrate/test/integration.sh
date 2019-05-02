@@ -1,29 +1,34 @@
 #!/bin/sh
 
-set -e -o pipefail
-
-RT="podman"
+RT=${RT:-balena-engine}
 CONTAINERIZED=${CONTAINERIZED:-0}
 PROJECT="$(dirname $(readlink -f $0))/../"
+IMAGE=${IMAGE:-balena/balena-engine:beind}
 
 set -x
 
-if [[ $CONTAINERIZED -eq 1 ]]; then
+[ $CONTAINERIZED -eq 1 ] && {
     # start balenaEngine
-    $RT run --rm --detach --name balena --privileged -v $PROJECT:/src -w /src balena:bind --debug --storage-driver=aufs --storage-opt=sync_diffs=false
+    $RT run --rm --detach --name balena --privileged -v $PROJECT:/src -w /src $IMAGE --debug --storage-driver=aufs
+    sleep 1
+    $RT inspect balena || exit 1
     # exec this in the balena container
     $RT exec -it balena /src/test/$(basename $0)
+    $RT stop balena
     exit 0
-fi
+}
 
 cat /etc/os-release
 
-balena info
+balena-engine info || exit 1
 
 echo 'FROM busybox
 RUN mkdir /tmp/d1 && touch /tmp/d1/d1f1 && touch /tmp/f1 && touch /tmp/f2
 RUN rm -R /tmp/d1 && mkdir /tmp/d1 && touch /tmp/d1/d1f2 && rm /tmp/f1' \ |
-    balena build -t a2o-test -
+    balena-engine build -t a2o-test -
+
+ls -l /var/lib/balena-engine/aufs/
+ls -l /var/lib/balena-engine/overlay2/
 
 ./a2o-migrate -version
 

@@ -1,6 +1,4 @@
 PWD := $(shell pwd)
-RUNTIME ?= "docker"
-BEIND_IMAGE ?= "balena:bind"
 
 a2o-migrate: clean
 	go build -ldflags="-s -X main.GitVersion=$(shell git describe --tag --always) -X main.BuildTime=$(shell date +%FT%T)"  -o ./$@ .
@@ -9,7 +7,7 @@ test-unit:
 	go test -v ./a2o
 
 test-integration: a2o-migrate
-	env CONTAINERIZED=1 RT=$(RUNTIME) IMAGE=$(BEIND_IMAGE) ./test/integration.sh
+	env CONTAINERIZED=1 ./test/integration.sh
 
 legacy:
 	$(RUNTIME) run --rm -it \
