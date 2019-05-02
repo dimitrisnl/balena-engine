@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	dockerDir = "/var/run/balena-engine"
+	dockerDir = "/var/lib/balena-engine"
 )
 
 var (
@@ -17,6 +17,7 @@ var (
 	overlay2Root = filepath.Join(dockerDir, "overlay2")
 )
 
+// AuFSToOverlay2 migrates the state of the storage from aufs -> overlay2
 func AuFSToOverlay2() error {
 	logrus.Debug("starting a2o migration")
 
