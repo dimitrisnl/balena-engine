@@ -10,30 +10,30 @@ import (
 )
 
 const (
-	dockerDir = "/var/lib/balena-engine"
+	balenaEngineDir = "/var/lib/balena-engine"
 )
 
 var (
-	aufsRoot     = filepath.Join(dockerDir, "aufs")
-	overlay2Root = filepath.Join(dockerDir, "overlay2")
+	aufsRoot    = filepath.Join(balenaEngineDir, "aufs")
+	overlayRoot = filepath.Join(balenaEngineDir, "overlay2")
 )
 
-// AuFSToOverlay2 migrates the state of the storage from aufs -> overlay2
-func AuFSToOverlay2() error {
+// AuFSToOverlay migrates the state of the storage from aufs -> overlay2
+func AuFSToOverlay() error {
 	logrus.Debug("starting a2o migration")
 
 	var err error
 
 	// make sure we actually have an aufs tree to migrate from
-	err = checkAufsExists(aufsRoot)
+	err = checkAufsExists(balenaEngineDir)
 	if err != nil {
 		return err
 	}
 
 	// make sure there isn't an overlay2 tree already
-	err = checkOverlay2NotExists(overlay2Root)
-	if err != nil {
-		return err
+	err = checkOverlayExists(balenaEngineDir)
+	if err == nil {
+		return errors.New("Overlay2 directory exists, not overwriting")
 	}
 
 	var state State
