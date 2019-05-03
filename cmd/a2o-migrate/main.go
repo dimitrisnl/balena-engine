@@ -41,11 +41,11 @@ func main() {
 	switch {
 	case modeAufsToOverlay:
 		if err := a2o.AuFSToOverlay(); err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s\n", err)
+			logrus.Error(err)
 			os.Exit(1)
 		}
 	case modeOverlayToAufs:
-		fmt.Fprintf(os.Stderr, "error: not implemented!")
+		logrus.Error("Not implemented!")
 		os.Exit(1)
 	}
 
