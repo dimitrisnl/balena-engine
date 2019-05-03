@@ -7,6 +7,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	errors "golang.org/x/xerrors"
+
+	"github.com/balena-os/balena-engine/cmd/a2o-migrate/aufsutil"
+	"github.com/balena-os/balena-engine/cmd/a2o-migrate/overlayutil"
 )
 
 const (
@@ -25,13 +28,13 @@ func AuFSToOverlay() error {
 	var err error
 
 	// make sure we actually have an aufs tree to migrate from
-	err = checkAufsExists(balenaEngineDir)
+	err = aufsutil.CheckRootExists(balenaEngineDir)
 	if err != nil {
 		return err
 	}
 
 	// make sure there isn't an overlay2 tree already
-	err = checkOverlayExists(balenaEngineDir)
+	err = overlayutil.CheckRootExists(balenaEngineDir)
 	if err == nil {
 		return errors.New("Overlay2 directory exists, not overwriting")
 	}
@@ -41,7 +44,7 @@ func AuFSToOverlay() error {
 	diffDir := filepath.Join(aufsRoot, "diff")
 
 	// get all layers
-	layerIDs, err := loadFiles(diffDir)
+	layerIDs, err := aufsutil.LoadFiles(diffDir)
 	if err != nil {
 		return errors.Errorf("Error loading layer ids: %w", err)
 	}
@@ -49,12 +52,12 @@ func AuFSToOverlay() error {
 
 	for _, layerID := range layerIDs {
 		logrus := logrus.WithField("layer_id", layerID)
-		logrus.Info("parsing layer")
+		logrus.Debug("parsing layer")
 		layer := Layer{ID: layerID}
 
 		// get parent layers
 		logrus.Debug("parsing parent ids")
-		parentIDs, err := getParentIDs(aufsRoot, layerID)
+		parentIDs, err := aufsutil.GetParentIDs(aufsRoot, layerID)
 		if err != nil {
 			return errors.Errorf("Error loading parent IDs for %s: %w", layerID, err)
 		}
@@ -74,9 +77,9 @@ func AuFSToOverlay() error {
 			absPath := r[1]
 			logrus := logrus.WithField("path", absPath)
 
-			if !fi.IsDir() && isWhiteout(fi.Name()) {
-				if isWhiteoutMeta(fi.Name()) {
-					if isOpaqueParentDir(fi.Name()) {
+			if !fi.IsDir() && aufsutil.IsWhiteout(fi.Name()) {
+				if aufsutil.IsWhiteoutMeta(fi.Name()) {
+					if aufsutil.IsOpaqueParentDir(fi.Name()) {
 						logrus.Debug("discovered opaque-dir marker")
 						layer.Meta = append(layer.Meta, Meta{
 							Path: filepath.Dir(absPath),
@@ -96,7 +99,7 @@ func AuFSToOverlay() error {
 				logrus.Debug("discovered whiteout marker")
 				// simple whiteout file
 				layer.Meta = append(layer.Meta, Meta{
-					Path: filepath.Join(filepath.Dir(absPath), stripWhiteoutPrefix(fi.Name())),
+					Path: filepath.Join(filepath.Dir(absPath), aufsutil.StripWhiteoutPrefix(fi.Name())),
 					Type: MetaWhiteout,
 				})
 			}
@@ -106,8 +109,8 @@ func AuFSToOverlay() error {
 			return errors.Errorf("Error walking filetree in %s: %w", layerDir, err)
 		}
 
-		// done.
 		state.Layers = append(state.Layers, layer)
+		logrus.Debug("done")
 	}
 
 	logrus.Debugf("final state %#+v", state)
