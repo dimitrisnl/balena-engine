@@ -43,7 +43,7 @@ func AuFSToOverlay() error {
 	// get all layers
 	layerIDs, err := loadFiles(diffDir)
 	if err != nil {
-		return errors.Errorf("error loading layer ids: %w", err)
+		return errors.Errorf("Error loading layer ids: %w", err)
 	}
 	logrus.Debugf("layer ids in %s: %+#v", diffDir, layerIDs)
 
@@ -56,7 +56,7 @@ func AuFSToOverlay() error {
 		logrus.Debug("parsing parent ids")
 		parentIDs, err := getParentIDs(aufsRoot, layerID)
 		if err != nil {
-			return errors.Errorf("error loading parent IDs for %s: %w", layerID, err)
+			return errors.Errorf("Error loading parent IDs for %s: %w", layerID, err)
 		}
 		layer.ParentIDs = parentIDs
 
@@ -103,7 +103,7 @@ func AuFSToOverlay() error {
 			return nil
 		})
 		if err != nil {
-			return errors.Errorf("error walking filetree in %s: %w", layerDir, err)
+			return errors.Errorf("Error walking filetree in %s: %w", layerDir, err)
 		}
 
 		// done.
