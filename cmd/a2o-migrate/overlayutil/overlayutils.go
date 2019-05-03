@@ -1,12 +1,14 @@
 package overlayutil
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	errors "golang.org/x/xerrors"
 
 	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
+	"github.com/docker/docker/daemon/graphdriver/overlay2"
 )
 
 var (
@@ -26,4 +28,38 @@ func CheckRootExists(engineDir string) error {
 		return ErrOverlayRootNotExists
 	}
 	return nil
+}
+
+// CreateLayerLink creates a link file in the layer root dir and a corresponding file in the l directory
+// The returned layerRef is the content of the created link file
+func CreateLayerLink(root, layerID string) (layerRef string, err error) {
+	layerLinkFile := filepath.Join(root, layerID, "link")
+	ok, err := osutil.Exists(layerLinkFile, false)
+	if err != nil {
+		return "", errors.Errorf("Error checking for %s: %w", layerLinkFile, err)
+	}
+	if ok {
+		// Return early if it already exists.
+		// Happens when we process layer that
+		// previously appeared as a parent layer.
+		ref, err := ioutil.ReadFile(layerLinkFile)
+		if err != nil {
+			return "", errors.Errorf("Error reading %s: %w", layerLinkFile, err)
+		}
+		return string(ref), nil
+	}
+	// idLength
+	// daemon/graphdriver/overlay2/overlay#L87
+	layerRef = overlay2.GenerateID(overlay2.IDLength)
+	err = ioutil.WriteFile(layerLinkFile, []byte(layerRef), 0644)
+	if err != nil {
+		return "", errors.Errorf("Error writing to %s: %w", layerLinkFile, err)
+	}
+	layerDiffDir := filepath.Join("..", layerID, "diff")
+	layerLinkRef := filepath.Join(root, "l", layerRef)
+	err = os.Symlink(layerDiffDir, layerLinkRef)
+	if err != nil {
+		return "", errors.Errorf("Error creating symlink %s -> %s: %w", layerDiffDir, layerLinkRef, err)
+	}
+	return layerRef, nil
 }
