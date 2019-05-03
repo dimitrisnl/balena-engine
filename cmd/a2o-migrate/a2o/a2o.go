@@ -2,6 +2,7 @@ package a2o // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	errors "golang.org/x/xerrors"
 
 	"github.com/balena-os/balena-engine/cmd/a2o-migrate/aufsutil"
+	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
 	"github.com/balena-os/balena-engine/cmd/a2o-migrate/overlayutil"
 )
 
@@ -139,9 +141,28 @@ func AuFSToOverlay() error {
 		}
 
 		// create /:layer_id/lower
+		var lower string
 		for _, parentID := range layer.ParentIDs {
-			logrus.Warn("todo: process parent layers")
+			logrus := logrus.WithField("parent_layer_id", parentID)
 
+			logrus.Debug("creating parent layer link")
+			parentRef, err := overlayutil.CreateLayerLink(overlayRoot, parentID)
+			if err != nil {
+				return errors.Errorf("Error creating layer link dir for parent layer: %w", err)
+			}
+			lower = overlayutil.AppendLower(lower, parentRef)
+		}
+		if lower != "" {
+			lowerFile := filepath.Join(layerDir, "lower")
+			err := ioutil.WriteFile(lowerFile, []byte(lower), 0644)
+			if err != nil {
+				return errors.Errorf("Error creating file at %s: %w", lowerFile, err)
+			}
+			layerWorkDir := filepath.Join(layerDir, "work")
+			err = os.MkdirAll(layerWorkDir, 0700)
+			if err != nil {
+				return errors.Errorf("Error creating directory at %s: %w", layerWorkDir, err)
+			}
 		}
 
 		layerDiffDir := filepath.Join(layerDir, "diff")
@@ -195,6 +216,6 @@ func AuFSToOverlay() error {
 	// sed -i "s/aufs/overlay2/g" /lib/systemd/system/balena.service
 	// sed -i "s/aufs/overlay2/g" /etc/systemd/system/balena.service.d/balena.conf
 
-	logrus.Debug("finished migration")
+	logrus.Info("finished migration")
 	return nil
 }

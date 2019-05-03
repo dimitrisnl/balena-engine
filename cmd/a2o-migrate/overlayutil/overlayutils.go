@@ -1,6 +1,7 @@
 package overlayutil
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -62,4 +63,12 @@ func CreateLayerLink(root, layerID string) (layerRef string, err error) {
 		return "", errors.Errorf("Error creating symlink %s -> %s: %w", layerDiffDir, layerLinkRef, err)
 	}
 	return layerRef, nil
+}
+
+// AppendLower adds parentID to the list of lower directories written to /:layer_id/lower
+func AppendLower(lower, parentID string) string {
+	if lower == "" {
+		return "l/" + parentID
+	}
+	return lower + ":l/" + parentID
 }
