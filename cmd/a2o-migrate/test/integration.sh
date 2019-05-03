@@ -22,10 +22,7 @@ cat /etc/os-release
 
 balena-engine info || exit 1
 
-echo 'FROM busybox
-RUN mkdir /tmp/d1 && touch /tmp/d1/d1f1 && touch /tmp/f1 && touch /tmp/f2
-RUN rm -R /tmp/d1 && mkdir /tmp/d1 && touch /tmp/d1/d1f2 && rm /tmp/f1' \ |
-    balena-engine build -t a2o-test -
+cat test/Dockerfile | balena-engine build -t a2o-test -
 
 ls -l /var/lib/balena-engine/aufs/
 ls -l /var/lib/balena-engine/overlay2/
