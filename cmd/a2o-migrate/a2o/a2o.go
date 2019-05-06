@@ -1,6 +1,7 @@
 package a2o // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -48,7 +49,7 @@ func AuFSToOverlay() error {
 	diffDir := filepath.Join(aufsRoot, "diff")
 
 	// get all layers
-	layerIDs, err := aufsutil.LoadFiles(diffDir)
+	layerIDs, err := osutil.LoadIDs(diffDir)
 	if err != nil {
 		return errors.Errorf("Error loading layer ids: %w", err)
 	}
@@ -256,15 +257,35 @@ func AuFSToOverlay() error {
 		return errors.Errorf("Error moving %s to %s: %w", aufsImageDir, overlayImageDir, err)
 	}
 
-	logrus.Warn("container migration not done yet!")
-	// # containers
-	// log "Migrating containers ..."
-	// for container_path in "$DOCKERDIR"/containers/*; do
-	// 	container="$(basename "$container_path")"
-	// 	log "---> $container"
-	// 	jq '.Driver="overlay2"' "$container_path/config.v2.json" > "/tmp/a2o-migrate-container-$container.tmp"
-	// 	mv "/tmp/a2o-migrate-container-$container.tmp" "$container_path/config.v2.json"
-	// done
+	logrus.Info("moving storage-driver of containers to overlay")
+	containerDir := filepath.Join(balenaEngineDir, "containers")
+	containerIDs, err := osutil.LoadIDs(containerDir)
+	if err != nil {
+		return errors.Errorf("Error listing containers in %s: %w", containerDir, err)
+	}
+	for _, containerID := range containerIDs {
+		logrus := logrus.WithField("container_id", containerID)
+
+		containerConfigPath := filepath.Join(containerDir, containerID, "config.v2.json")
+		f, err := os.OpenFile(containerConfigPath, os.O_RDWR, 0600)
+		if err != nil {
+			return errors.Errorf("Error opening container config at %s: %w", containerConfigPath, err)
+		}
+		defer f.Close()
+
+		var containerConfig = make(map[string]interface{})
+		err = json.NewDecoder(f).Decode(&containerConfig)
+		if err != nil {
+			return errors.Errorf("Error parsing container config: %w", err)
+		}
+		containerConfig["Driver"] = "overlay2"
+		err = json.NewEncoder(f).Encode(&containerConfig)
+		if err != nil {
+			return errors.Errorf("Error writing container config: %w", err)
+		}
+
+		logrus.Info("reconfigured storage-driver from aufs to overlay2")
+	}
 
 	logrus.Warn("daemon migration not done yet!")
 	// sed -i "s/aufs/overlay2/g" /lib/systemd/system/balena.service

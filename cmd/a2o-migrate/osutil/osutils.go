@@ -1,7 +1,9 @@
 package osutil // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
 
 import (
+	"io/ioutil"
 	"os"
+
 	"golang.org/x/sys/unix"
 )
 
@@ -28,4 +30,21 @@ func GetUIDAndGID(path string) (uid, gid int, err error) {
 		return 0, 0, err
 	}
 	return int(fi.Uid), int(fi.Gid), nil
+}
+
+// Return all the directories
+//
+// from daemon/graphdriver/aufs/dirs.go
+func LoadIDs(root string) ([]string, error) {
+	dirs, err := ioutil.ReadDir(root)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, d := range dirs {
+		if d.IsDir() {
+			out = append(out, d.Name())
+		}
+	}
+	return out, nil
 }

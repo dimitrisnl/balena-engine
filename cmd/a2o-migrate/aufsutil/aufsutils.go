@@ -2,7 +2,6 @@ package aufsutil
 
 import (
 	"bufio"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -59,26 +58,13 @@ func StripWhiteoutPrefix(filename string) string {
 	return out
 }
 
-// Return all the directories
-func LoadFiles(root string) ([]string, error) {
-	dirs, err := ioutil.ReadDir(root)
-	if err != nil {
-		return nil, err
-	}
-	var out []string
-	for _, d := range dirs {
-		out = append(out, d.Name())
-	}
-	return out, nil
-}
-
-// from daemon/graphdriver/aufs/dirs.go
-
 // Read the layers file for the current id and return all the
 // layers represented by new lines in the file
 //
 // If there are no lines in the file then the id has no parent
 // and an empty slice is returned.
+//
+// from daemon/graphdriver/aufs/dirs.go
 func GetParentIDs(root, id string) ([]string, error) {
 	f, err := os.Open(path.Join(root, "layers", id))
 	if err != nil {
