@@ -248,8 +248,13 @@ func AuFSToOverlay() error {
 		logrus.Info("done")
 	}
 
-	logrus.Warn("image migration not done yet!")
-	// mv "$DOCKERDIR/image/aufs" "$DOCKERDIR/image/overlay2"
+	logrus.Info("moving aufs images to overlay")
+	aufsImageDir := filepath.Join(balenaEngineDir, "image", "aufs")
+	overlayImageDir := filepath.Join(balenaEngineDir, "image", "overlay2")
+	err = os.Rename(aufsImageDir, overlayImageDir)
+	if err != nil {
+		return errors.Errorf("Error moving %s to %s: %w", aufsImageDir, overlayImageDir, err)
+	}
 
 	logrus.Warn("container migration not done yet!")
 	// # containers
