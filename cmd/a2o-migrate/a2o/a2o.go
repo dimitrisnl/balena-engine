@@ -141,11 +141,25 @@ func AuFSToOverlay() error {
 			return errors.Errorf("Error creating layer link dir: %w", err)
 		}
 
+		logrus.Debug("processing parent layers")
 		// create /:layer_id/lower
 		var lower string
 		for _, parentID := range layer.ParentIDs {
 			logrus := logrus.WithField("parent_layer_id", parentID)
 
+			parentLayerDir := filepath.Join(overlayRoot, parentID)
+			ok, err := osutil.Exists(parentLayerDir, true)
+			if err != nil {
+				return errors.Errorf("Error checking for %s: %w", parentLayerDir, err)
+			}
+			if !ok {
+				// parent layer hasn't been processed separately yet.
+				logrus.Debugf("creating parent layer base dir %s", parentLayerDir)
+				err := os.MkdirAll(parentLayerDir, 0700)
+				if err != nil {
+					return errors.Errorf("Error creating layer directory at %s: %w", parentLayerDir, err)
+				}
+			}
 			logrus.Debug("creating parent layer link")
 			parentRef, err := overlayutil.CreateLayerLink(overlayRoot, parentID)
 			if err != nil {
@@ -155,11 +169,13 @@ func AuFSToOverlay() error {
 		}
 		if lower != "" {
 			lowerFile := filepath.Join(layerDir, "lower")
+			logrus.Debugf("creating lower at %s", lowerFile)
 			err := ioutil.WriteFile(lowerFile, []byte(lower), 0644)
 			if err != nil {
 				return errors.Errorf("Error creating file at %s: %w", lowerFile, err)
 			}
 			layerWorkDir := filepath.Join(layerDir, "work")
+			logrus.Debugf("creating work dir at %s", lowerFile)
 			err = os.MkdirAll(layerWorkDir, 0700)
 			if err != nil {
 				return errors.Errorf("Error creating directory at %s: %w", layerWorkDir, err)
@@ -229,6 +245,7 @@ func AuFSToOverlay() error {
 		if err != nil {
 			return errors.Errorf("Error moving layer data from %s to %s: %w", aufsLayerDir, layerDiffDir, err)
 		}
+		logrus.Info("done")
 	}
 
 	logrus.Warn("image migration not done yet!")
