@@ -50,6 +50,19 @@ func CreateLayerLink(root, layerID string) (layerRef string, err error) {
 		}
 		return string(ref), nil
 	}
+	layerRefDir := filepath.Join(root, "l")
+	ok, err = osutil.Exists(layerRefDir, true)
+	if err != nil {
+		return "", errors.Errorf("Error checking for %s: %s", layerRefDir, err)
+	}
+	if !ok {
+		// create layer ref dir
+		// to avoid having to do this outside of this function
+		err := os.MkdirAll(layerRefDir, 0700)
+		if err != nil {
+			return "", errors.Errorf("Error creating directory %s: %w", layerRefDir, err)
+		}
+	}
 	// idLength
 	// daemon/graphdriver/overlay2/overlay#L87
 	layerRef = overlay2.GenerateID(overlay2.IDLength)
@@ -58,7 +71,7 @@ func CreateLayerLink(root, layerID string) (layerRef string, err error) {
 		return "", errors.Errorf("Error writing to %s: %w", layerLinkFile, err)
 	}
 	layerDiffDir := filepath.Join("..", layerID, "diff")
-	layerLinkRef := filepath.Join(root, "l", layerRef)
+	layerLinkRef := filepath.Join(layerRefDir, layerRef)
 	err = os.Symlink(layerDiffDir, layerLinkRef)
 	if err != nil {
 		return "", errors.Errorf("Error creating symlink %s -> %s: %w", layerDiffDir, layerLinkRef, err)
