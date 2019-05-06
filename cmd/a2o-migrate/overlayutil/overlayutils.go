@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 	errors "golang.org/x/xerrors"
 
 	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
@@ -71,4 +72,16 @@ func AppendLower(lower, parentID string) string {
 		return "l/" + parentID
 	}
 	return lower + ":l/" + parentID
+}
+
+// SetOpaque marks the directory to appera empty
+// by setting the xattr "trusted.overlay.opaque" to "y"
+func SetOpaque(path string) error {
+	return unix.Setxattr(path, "trusted.overlay.opaque", []byte("y"), 0)
+}
+
+// SetWhiteout marks the file as deleted
+// by creating a character device with 0/0 device number
+func SetWhiteout(path string) error {
+	return unix.Mknod(path, unix.S_IFCHR, 0)
 }

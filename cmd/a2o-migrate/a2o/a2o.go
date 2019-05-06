@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 	errors "golang.org/x/xerrors"
 
 	"github.com/balena-os/balena-engine/cmd/a2o-migrate/aufsutil"
@@ -176,10 +177,41 @@ func AuFSToOverlay() error {
 			logrus.WithField("meta_type", fmt.Sprintf("%v", meta.Type)).Debugf("translating %s to overlay", meta.Path)
 			switch meta.Type {
 			case MetaOpaque:
-				// TODO set the opque xattr
+				// set the opque xattr
+				err := overlayutil.SetOpaque(metaPath)
+				if err != nil {
+					return errors.Errorf("Error marking %s as opque: %w", metaPath, err)
+				}
+				// remove aufs metadata file
+				aufsMetaPath := filepath.Join(metaPath, aufsutil.OpaqueDirMarkerFilename)
+				err = os.Remove(aufsMetaPath)
+				if err != nil {
+					return errors.Errorf("Error removing file at %s: %w", aufsMetaPath, err)
+				}
 
 			case MetaWhiteout:
-				// TODO create the 0x0 char device
+				// create the 0x0 char device
+				err := overlayutil.SetWhiteout(metaPath)
+				if err != nil {
+					return errors.Errorf("Error marking %s as whiteout: %w", metaPath, err)
+				}
+				metaDir, metaFile := filepath.Split(metaPath)
+				aufsMetaPath := filepath.Join(metaDir, aufsutil.WhiteoutPrefix+metaFile)
+
+				// chown the new char device with the old uid/gid
+				uid, gid, err := osutil.GetUIDAndGID(aufsMetaPath)
+				if err != nil {
+					return errors.Errorf("Error getting UID and GUI for %s: %w", aufsMetaPath, err)
+				}
+				err = unix.Chown(metaPath, uid, gid)
+				if err != nil {
+					return errors.Errorf("Error chowning character device at %s: %w", metaPath, err)
+				}
+
+				err = os.Remove(aufsMetaPath)
+				if err != nil {
+					return errors.Errorf("Error removing file at %s: %w", aufsMetaPath, err)
+				}
 
 			case MetaOther:
 				metaDir, metaFile := filepath.Split(metaPath)
