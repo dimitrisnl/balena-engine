@@ -244,11 +244,9 @@ func AuFSToOverlay() error {
 				}
 
 			case MetaOther:
-				metaDir, metaFile := filepath.Split(metaPath)
-				aufsMetaPath := filepath.Join(metaDir, aufsutil.WhiteoutMetaPrefix+metaFile)
-				err = os.Remove(aufsMetaPath)
+				err = os.Remove(metaPath)
 				if err != nil {
-					return errors.Errorf("Error removing file at %s: %w", aufsMetaPath, err)
+					return errors.Errorf("Error removing file at %s: %w", metaPath, err)
 				}
 			}
 		}
