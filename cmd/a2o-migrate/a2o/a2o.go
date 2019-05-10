@@ -2,7 +2,6 @@ package a2o // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -204,9 +203,9 @@ func AuFSToOverlay() error {
 		for _, meta := range layer.Meta {
 			metaPath := filepath.Join(aufsLayerDir, meta.Path)
 
-			logrus.WithField("meta_type", fmt.Sprintf("%v", meta.Type)).Debugf("translating %s to overlay", meta.Path)
 			switch meta.Type {
 			case MetaOpaque:
+				logrus.WithField("meta_type", "opaque").Debugf("translating %s to overlay", meta.Path)
 				// set the opque xattr
 				err := overlayutil.SetOpaque(metaPath)
 				if err != nil {
@@ -220,6 +219,7 @@ func AuFSToOverlay() error {
 				}
 
 			case MetaWhiteout:
+				logrus.WithField("meta_type", "whiteout").Debugf("translating %s to overlay", meta.Path)
 				// create the 0x0 char device
 				err := overlayutil.SetWhiteout(metaPath)
 				if err != nil {
@@ -244,6 +244,7 @@ func AuFSToOverlay() error {
 				}
 
 			case MetaOther:
+				logrus.WithField("meta_type", "whiteoutmeta").Debugf("removing %s from overlay", meta.Path)
 				err = os.Remove(metaPath)
 				if err != nil {
 					return errors.Errorf("Error removing aufs whiteout meta file at: %w", err)
