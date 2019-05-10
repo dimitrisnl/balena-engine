@@ -84,7 +84,7 @@ func AuFSToOverlay() error {
 			}
 			logrus := logrus.WithField("path", absPath)
 
-			if !fi.IsDir() && aufsutil.IsWhiteout(fi.Name()) {
+			if aufsutil.IsWhiteout(fi.Name()) {
 				if aufsutil.IsWhiteoutMeta(fi.Name()) {
 					if aufsutil.IsOpaqueParentDir(fi.Name()) {
 						layer.Meta = append(layer.Meta, Meta{
