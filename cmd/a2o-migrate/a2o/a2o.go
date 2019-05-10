@@ -41,10 +41,16 @@ func AuFSToOverlay() error {
 	// make sure there isn't an overlay2 tree already
 	err = overlayutil.CheckRootExists(balenaEngineDir)
 	if err == nil {
-		return errors.New("Overlay2 directory exists, not overwriting")
+		logrus.Warn("overlay root found, cleaning up...")
+		err := os.Remove(overlayRoot)
+		if err != nil {
+			return errors.Errorf("Error cleaning up %s: %w", overlayRoot, err)
+		}
 	}
 
-	var state State
+	var (
+		state State
+	)
 
 	diffDir := filepath.Join(aufsRoot, "diff")
 
