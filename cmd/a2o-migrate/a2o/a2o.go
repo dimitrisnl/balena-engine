@@ -91,29 +91,32 @@ func AuFSToOverlay() error {
 			if !fi.IsDir() && aufsutil.IsWhiteout(fi.Name()) {
 				if aufsutil.IsWhiteoutMeta(fi.Name()) {
 					if aufsutil.IsOpaqueParentDir(fi.Name()) {
-						logrus.Debug("discovered opaque-dir marker")
 						layer.Meta = append(layer.Meta, Meta{
 							Path: filepath.Dir(absPath),
 							Type: MetaOpaque,
 						})
+						logrus.Debug("discovered opaque-dir marker")
 						return nil
 					}
 
-					logrus.Debug("discovered whiteout-meta marker")
 					// other whiteout metadata
 					layer.Meta = append(layer.Meta, Meta{
 						Path: absPath,
 						Type: MetaOther,
 					})
+					logrus.Debug("discovered whiteout-meta marker")
+					return nil
 				}
 
-				logrus.Debug("discovered whiteout marker")
 				// simple whiteout file
 				layer.Meta = append(layer.Meta, Meta{
 					Path: filepath.Join(filepath.Dir(absPath), aufsutil.StripWhiteoutPrefix(fi.Name())),
 					Type: MetaWhiteout,
 				})
+				logrus.Debug("discovered whiteout marker")
+				return nil
 			}
+
 			return nil
 		})
 		if err != nil {
