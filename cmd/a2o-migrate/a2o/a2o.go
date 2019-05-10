@@ -197,6 +197,7 @@ func AuFSToOverlay() error {
 
 		logrus.Info("hardlinking aufs data to overlay")
 		// move data over
+		// TODO(robertgzr): when are we removing this?
 		err = replicate(aufsLayerDir, overlayLayerDir)
 		if err != nil {
 			return errors.Errorf("Error moving layer data to overlay2: %w", err)
@@ -268,7 +269,8 @@ func AuFSToOverlay() error {
 	logrus.Info("moving aufs images to overlay")
 	aufsImageDir := filepath.Join(balenaEngineDir, "image", "aufs")
 	overlayImageDir := filepath.Join(balenaEngineDir, "image", "overlay2")
-	err = os.Rename(aufsImageDir, overlayImageDir)
+	// TODO(robertgzr): when are we removing this?
+	err = replicate(aufsImageDir, overlayImageDir)
 	if err != nil {
 		return errors.Errorf("Error moving aufs images to overlay: %w", err)
 	}
