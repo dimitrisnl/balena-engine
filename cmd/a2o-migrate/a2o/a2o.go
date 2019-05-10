@@ -139,7 +139,7 @@ func AuFSToOverlay() error {
 
 		logrus.Debugf("creating base dir %s", layerDir)
 		// create /:layer_id dir
-		err := os.MkdirAll(layerDir, 0700)
+		err := os.MkdirAll(layerDir, os.ModeDir|0700)
 		if err != nil {
 			return errors.Errorf("Error creating layer directory for %s: %w", layer.ID, err)
 		}
@@ -165,7 +165,7 @@ func AuFSToOverlay() error {
 			if !ok {
 				// parent layer hasn't been processed separately yet.
 				logrus.Debugf("creating parent layer base dir %s", parentLayerDir)
-				err := os.MkdirAll(parentLayerDir, 0700)
+				err := os.MkdirAll(parentLayerDir, os.ModeDir|0700)
 				if err != nil {
 					return errors.Errorf("Error creating layer directory for parent layer %s: %w", parentID, err)
 				}
@@ -186,7 +186,7 @@ func AuFSToOverlay() error {
 			}
 			layerWorkDir := filepath.Join(layerDir, "work")
 			logrus.Debugf("creating work dir at %s", lowerFile)
-			err = os.MkdirAll(layerWorkDir, 0700)
+			err = os.MkdirAll(layerWorkDir, os.ModeDir|0700)
 			if err != nil {
 				return errors.Errorf("Error creating work dir for %s: %w", layer.ID, err)
 			}
