@@ -44,3 +44,34 @@ func switchContainerStorageDriver(containerID, newStorageDriver string) error {
 	}
 	return nil
 }
+
+// replicate hardlinks all files from sourceDir to targetDir, reusing the same
+// file structure
+func replicate(sourceDir, targetDir string) error {
+	return filepath.Walk(sourceDir, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		var (
+			targetPath = strings.Replace(path, sourceDir, targetDir, 1)
+			logrus     = logrus.WithField("path", targetPath)
+		)
+
+		if fi.IsDir() {
+			logrus.Debug("creating directory")
+			err = os.MkdirAll(targetPath, os.ModeDir|0755)
+			if err != nil {
+				return err
+			}
+		} else {
+			logrus.Debug("create hardlink")
+			err = os.Link(path, targetPath)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}

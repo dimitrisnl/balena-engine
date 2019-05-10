@@ -192,13 +192,20 @@ func AuFSToOverlay() error {
 			}
 		}
 
-		layerDiffDir := filepath.Join(layerDir, "diff")
+		overlayLayerDir := filepath.Join(layerDir, "diff")
 		aufsLayerDir := filepath.Join(aufsRoot, "diff", layer.ID)
 
+		logrus.Info("hardlinking aufs data to overlay")
+		// move data over
+		err = replicate(aufsLayerDir, overlayLayerDir)
+		if err != nil {
+			return errors.Errorf("Error moving layer data to overlay2: %w", err)
+		}
+
 		// migrate metadata files
-		logrus.Debugf("processing metadata %d file(s)", len(layer.Meta))
+		logrus.Debugf("processing %d metadata file(s)", len(layer.Meta))
 		for _, meta := range layer.Meta {
-			metaPath := filepath.Join(aufsLayerDir, meta.Path)
+			metaPath := filepath.Join(overlayLayerDir, meta.Path)
 
 			switch meta.Type {
 			case MetaOpaque:
@@ -209,10 +216,10 @@ func AuFSToOverlay() error {
 					return errors.Errorf("Error marking %s as opque: %w", metaPath, err)
 				}
 				// remove aufs metadata file
-				aufsMetaPath := filepath.Join(metaPath, aufsutil.OpaqueDirMarkerFilename)
-				err = os.Remove(aufsMetaPath)
+				aufsMetaFile := filepath.Join(metaPath, aufsutil.OpaqueDirMarkerFilename)
+				err = os.Remove(aufsMetaFile)
 				if err != nil {
-					return errors.Errorf("Error removing meta file: %w", err)
+					return errors.Errorf("Error removing opque meta file: %w", err)
 				}
 
 			case MetaWhiteout:
@@ -223,10 +230,10 @@ func AuFSToOverlay() error {
 					return errors.Errorf("Error marking %s as whiteout: %w", metaPath, err)
 				}
 				metaDir, metaFile := filepath.Split(metaPath)
-				aufsMetaPath := filepath.Join(metaDir, aufsutil.WhiteoutPrefix+metaFile)
+				aufsMetaFile := filepath.Join(metaDir, aufsutil.WhiteoutPrefix+metaFile)
 
 				// chown the new char device with the old uid/gid
-				uid, gid, err := osutil.GetUIDAndGID(aufsMetaPath)
+				uid, gid, err := osutil.GetUIDAndGID(aufsMetaFile)
 				if err != nil {
 					return errors.Errorf("Error getting UID and GID: %w", err)
 				}
@@ -235,7 +242,7 @@ func AuFSToOverlay() error {
 					return errors.Errorf("Error chowning character device: %w", err)
 				}
 
-				err = os.Remove(aufsMetaPath)
+				err = os.Remove(aufsMetaFile)
 				if err != nil {
 					return errors.Errorf("Error removing aufs whiteout file: %w", err)
 				}
@@ -244,17 +251,11 @@ func AuFSToOverlay() error {
 				logrus.WithField("meta_type", "whiteoutmeta").Debugf("removing %s from overlay", meta.Path)
 				err = os.Remove(metaPath)
 				if err != nil {
-					return errors.Errorf("Error removing aufs whiteout meta file at: %w", err)
+					return errors.Errorf("Error removing useless aufs meta file at: %w", err)
 				}
 			}
 		}
 
-		logrus.Info("moving aufs data to overlay")
-		// move data over
-		err = os.Rename(aufsLayerDir, layerDiffDir)
-		if err != nil {
-			return errors.Errorf("Error moving layer data to overlay2: %w", err)
-		}
 		logrus.Info("done")
 	}
 
