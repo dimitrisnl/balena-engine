@@ -126,12 +126,16 @@ func AuFSToOverlay() error {
 
 	logrus.Infof("moving %d layer(s) to overlay", len(state.Layers))
 
+	var (
+		tempTargetRoot = filepath.Join(balenaEngineDir, "overlay2.temp")
+	)
+
 	// move to overlay filetree
 	for _, layer := range state.Layers {
 		logrus := logrus.WithField("layer_id", layer.ID)
 
 		var (
-			layerDir = filepath.Join(overlayRoot, layer.ID)
+			layerDir = filepath.Join(tempTargetRoot, layer.ID)
 		)
 
 		logrus.Debugf("creating base dir %s", layerDir)
@@ -143,7 +147,7 @@ func AuFSToOverlay() error {
 
 		logrus.Debug("creating layer link")
 		// create /:layer_id/link file and /l/:layer_ref file
-		_, err = overlayutil.CreateLayerLink(overlayRoot, layer.ID)
+		_, err = overlayutil.CreateLayerLink(tempTargetRoot, layer.ID)
 		if err != nil {
 			return errors.Errorf("Error creating layer link dir: %w", err)
 		}
@@ -154,7 +158,7 @@ func AuFSToOverlay() error {
 		for _, parentID := range layer.ParentIDs {
 			logrus := logrus.WithField("parent_layer_id", parentID)
 
-			parentLayerDir := filepath.Join(overlayRoot, parentID)
+			parentLayerDir := filepath.Join(tempTargetRoot, parentID)
 			ok, err := osutil.Exists(parentLayerDir, true)
 			if err != nil {
 				return errors.Errorf("Error checking for %s: %w", parentLayerDir, err)
@@ -168,7 +172,7 @@ func AuFSToOverlay() error {
 				}
 			}
 			logrus.Debug("creating parent layer link")
-			parentRef, err := overlayutil.CreateLayerLink(overlayRoot, parentID)
+			parentRef, err := overlayutil.CreateLayerLink(tempTargetRoot, parentID)
 			if err != nil {
 				return errors.Errorf("Error creating layer link dir for parent layer: %w", err)
 			}
@@ -253,6 +257,12 @@ func AuFSToOverlay() error {
 			return errors.Errorf("Error moving layer data from %s to %s: %w", aufsLayerDir, layerDiffDir, err)
 		}
 		logrus.Info("done")
+	}
+
+	logrus.Debug("moving from temporary root to overlay2 root")
+	err = os.Rename(tempTargetRoot, overlayRoot)
+	if err != nil {
+		return errors.Errorf("Error moving %s to %s: %w", tempTargetRoot, overlayRoot, err)
 	}
 
 	logrus.Info("moving aufs images to overlay")
