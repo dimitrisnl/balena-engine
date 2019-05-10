@@ -1,7 +1,6 @@
 package a2o // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -282,27 +281,11 @@ func AuFSToOverlay() error {
 		return errors.Errorf("Error listing containers: %w", err)
 	}
 	for _, containerID := range containerIDs {
-		logrus := logrus.WithField("container_id", containerID)
-
-		containerConfigPath := filepath.Join(containerDir, containerID, "config.v2.json")
-		f, err := os.OpenFile(containerConfigPath, os.O_RDWR, 0600)
+		err := switchContainerStorageDriver(containerID, "overlay2")
 		if err != nil {
-			return errors.Errorf("Error opening container config for %s: %w", containerID, err)
+			return errors.Errorf("Error rewriting container config for %s: %w", containerID, err)
 		}
-		defer f.Close()
-
-		var containerConfig = make(map[string]interface{})
-		err = json.NewDecoder(f).Decode(&containerConfig)
-		if err != nil {
-			return errors.Errorf("Error parsing container config: %w", err)
-		}
-		containerConfig["Driver"] = "overlay2"
-		err = json.NewEncoder(f).Encode(&containerConfig)
-		if err != nil {
-			return errors.Errorf("Error writing container config: %w", err)
-		}
-
-		logrus.Info("reconfigured storage-driver from aufs to overlay2")
+		logrus.WithField("container_id", containerID).Info("reconfigured storage-driver from aufs to overlay2")
 	}
 
 	logrus.Warn("daemon migration not done yet!")
