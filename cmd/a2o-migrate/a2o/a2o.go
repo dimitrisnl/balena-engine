@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
@@ -79,11 +78,10 @@ func AuFSToOverlay() error {
 				return err
 			}
 
-			r := strings.SplitAfter(path, layerDir)
-			if len(r) != 2 {
-				return errors.Errorf("unexpected path: %s", path)
+			absPath, err := filepath.Rel(layerDir, path)
+			if err != nil {
+				return err
 			}
-			absPath := r[1]
 			logrus := logrus.WithField("path", absPath)
 
 			if !fi.IsDir() && aufsutil.IsWhiteout(fi.Name()) {
