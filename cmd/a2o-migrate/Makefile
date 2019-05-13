@@ -1,6 +1,6 @@
 PWD := $(shell pwd)
 
-GO_BUILDINFO=-X main.GitVersion=$(shell git describe --tag --always) -X main.BuildTime=$(shell date +%FT%T)
+GO_BUILDINFO=-X main.GitVersion=$(shell git describe --tag --always) -X main.BuildTime=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 GO_LDFLAGS=-extldflags "-fno-PIC -static"
 GO_BUILDFLAGS=-ldflags '$(GO_LDFLAGS) $(GO_BUILDINFO)' -buildmode pie -tags 'osusergo netgo static_build'
 
