@@ -16,38 +16,34 @@ var ( // auto generated on build
 )
 
 var ( // flag values
-	debug             = false
-	printVersion      = false
-	modeAufsToOverlay = true
-	modeOverlayToAufs = false
+	debug        = false
+	printVersion = false
+	runMigration = false
 )
 
 func main() {
-	flag.BoolVar(&debug, "debug", false, "enable debug logging")
-	flag.BoolVar(&printVersion, "version", false, "print version")
-	flag.BoolVar(&modeAufsToOverlay, "aufs-to-overlay", true, "migrate from aufs to overlay")
-	flag.BoolVar(&modeOverlayToAufs, "overlay-to-aufs", false, "migrate back from overlay to aufs")
+	flag.BoolVar(&debug, "debug", debug, "enable debug logging")
+	flag.BoolVar(&printVersion, "version", printVersion, "print version")
+	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")
 	flag.Parse()
-
-	if printVersion {
-		fmt.Fprintf(os.Stdout, "a2o-migrate version %s (build %s)\n", GitVersion, BuildTime)
-		os.Exit(0)
-	}
 
 	if debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
 	switch {
-	case modeAufsToOverlay:
-		if err := a2o.AuFSToOverlay(); err != nil {
+	case printVersion:
+		fmt.Fprintf(os.Stdout, "a2o-migrate version %s (build %s)\n", GitVersion, BuildTime)
+		os.Exit(0)
+
+	case runMigration:
+		if err := a2o.Migrate(); err != nil {
 			logrus.Error(err)
 			os.Exit(1)
 		}
-	case modeOverlayToAufs:
-		logrus.Error("Not implemented!")
-		os.Exit(1)
-	}
 
-	os.Exit(0)
+
+	default:
+		flag.Usage()
+	}
 }
