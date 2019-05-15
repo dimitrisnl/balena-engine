@@ -20,6 +20,7 @@ var ( // flag values
 	printVersion = false
 	runMigration = false
 	runCleanup   = false
+	runRollback  = false
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	flag.BoolVar(&printVersion, "version", printVersion, "print version")
 	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")
 	flag.BoolVar(&runCleanup, "cleanup", runCleanup, "cleanup leftover migration data")
+	flag.BoolVar(&runRollback, "rollback", runRollback, "go back to aufs")
 	flag.Parse()
 
 	if debug {
@@ -46,6 +48,12 @@ func main() {
 
 	case runCleanup:
 		if err := a2o.Cleanup(); err != nil {
+			logrus.Error(err)
+			os.Exit(1)
+		}
+
+	case runRollback:
+		if err := a2o.Rollback(); err != nil {
 			logrus.Error(err)
 			os.Exit(1)
 		}
