@@ -19,12 +19,14 @@ var ( // flag values
 	debug        = false
 	printVersion = false
 	runMigration = false
+	runCleanup   = false
 )
 
 func main() {
 	flag.BoolVar(&debug, "debug", debug, "enable debug logging")
 	flag.BoolVar(&printVersion, "version", printVersion, "print version")
 	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")
+	flag.BoolVar(&runCleanup, "cleanup", runCleanup, "cleanup leftover migration data")
 	flag.Parse()
 
 	if debug {
@@ -42,6 +44,11 @@ func main() {
 			os.Exit(1)
 		}
 
+	case runCleanup:
+		if err := a2o.Cleanup(); err != nil {
+			logrus.Error(err)
+			os.Exit(1)
+		}
 
 	default:
 		flag.Usage()
