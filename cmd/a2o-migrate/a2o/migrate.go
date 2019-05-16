@@ -116,10 +116,6 @@ func Migrate() error {
 
 	logrus.Infof("moving %d layer(s) to overlay", len(state.Layers))
 
-	var (
-		tempTargetRoot = filepath.Join(balenaEngineDir, "overlay2.temp")
-	)
-
 	// move to overlay filetree
 	for _, layer := range state.Layers {
 		logrus := logrus.WithField("layer_id", layer.ID)
@@ -280,9 +276,15 @@ func Migrate() error {
 		logrus.WithField("container_id", containerID).Info("reconfigured storage-driver from aufs to overlay2")
 	}
 
-	logrus.Warn("daemon migration not done yet!")
-	// sed -i "s/aufs/overlay2/g" /lib/systemd/system/balena.service
-	// sed -i "s/aufs/overlay2/g" /etc/systemd/system/balena.service.d/balena.conf
+	logrus.Info("migrating daemon configuration")
+	err = osutil.Sed(balenaEngineService, "aufs", "overlay2", -1)
+	if err != nil {
+		return errors.Errorf("Error migrating daemon confguration: %w", err)
+	}
+	err = osutil.Sed(balenaEngineServiceOverwrite, "aufs", "overlay2", -1)
+	if err != nil {
+		return errors.Errorf("Error migrating daemon confguration: %w", err)
+	}
 
 	logrus.Info("finished migration")
 	return nil

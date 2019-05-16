@@ -3,6 +3,7 @@ package osutil // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/osu
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"golang.org/x/sys/unix"
 )
@@ -47,4 +48,31 @@ func LoadIDs(root string) ([]string, error) {
 		}
 	}
 	return out, nil
+}
+
+// Sed works like the sed(1) command on unix
+func Sed(path, old, new string, n int) error {
+	f, err := os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	contents, err := ioutil.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+	newContents := strings.Replace(string(contents), old, new, n)
+	f, err = os.OpenFile(path, os.O_RDWR|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(newContents)
+	if err != nil {
+		return err
+	}
+	return nil
 }
