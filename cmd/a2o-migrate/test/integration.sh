@@ -18,6 +18,11 @@ set -x
     cat test/Dockerfile | $RT exec -i balena balena-engine build -t a2o-test -
     $RT exec balena balena-engine run --name a2o-test-container a2o-test ls -lR /tmp
 
+    # copy systemd files into container
+    $RT exec balena ash -c 'mkdir -p /lib/systemd/system ; mkdir -p /etc/systemd/system'
+    $RT cp $PROJECT/test/systemd/balena.service balena:/lib/systemd/system/balena.service
+    $RT cp $PROJECT/test/systemd/balena.service.d balena:/etc/systemd/system/balena.service.d
+
     # run migration
     $RT exec -it balena /src/test/$(basename $0)
 
@@ -49,6 +54,9 @@ balena-engine info || exit 1
 
 ./a2o-migrate -version
 
-./a2o-migrate -debug
+./a2o-migrate -debug -migrate
+
+cat /lib/systemd/system/balena.service | grep overlay2
+cat /etc/systemd/system/balena.service.d/balena.conf | grep overlay2
 
 # ls -lR /var/lib/balena-engine/
