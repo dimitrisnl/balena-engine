@@ -9,7 +9,7 @@ import (
 // Cleanup should be run after the migration was successful.
 // It removes the old aufs directory.
 func Cleanup() error {
-	logrus.Debug("starting cleanup")
+	logrus.Info("starting cleanup")
 	logrus.Warnf("This will remove %s", aufsRoot)
 
 	err := os.Remove(aufsRoot)

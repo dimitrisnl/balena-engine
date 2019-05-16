@@ -16,7 +16,7 @@ import (
 
 // Migrate migrates the state of the storage from aufs -> overlay2
 func Migrate() error {
-	logrus.Debug("starting aufs -> overlay2 migration")
+	logrus.Info("starting aufs -> overlay2 migration")
 
 	var err error
 
@@ -182,7 +182,7 @@ func Migrate() error {
 		overlayLayerDir := filepath.Join(layerDir, "diff")
 		aufsLayerDir := filepath.Join(aufsRoot, "diff", layer.ID)
 
-		logrus.Info("hardlinking aufs data to overlay")
+		logrus.Debug("hardlinking aufs data to overlay")
 		// move data over
 		// TODO(robertgzr): when are we removing this?
 		err = replicate(aufsLayerDir, overlayLayerDir)
@@ -244,7 +244,7 @@ func Migrate() error {
 			}
 		}
 
-		logrus.Info("done")
+		logrus.Debug("done")
 	}
 
 	logrus.Debug("moving from temporary root to overlay2 root")
@@ -262,18 +262,18 @@ func Migrate() error {
 		return errors.Errorf("Error moving aufs images to overlay: %w", err)
 	}
 
-	logrus.Info("moving storage-driver of containers to overlay")
 	containerDir := filepath.Join(balenaEngineDir, "containers")
 	containerIDs, err := osutil.LoadIDs(containerDir)
 	if err != nil {
 		return errors.Errorf("Error listing containers: %w", err)
 	}
+	logrus.Infof("moving storage-driver of %d container(s) to overlay", len(containerIDs))
 	for _, containerID := range containerIDs {
 		err := switchContainerStorageDriver(containerID, "overlay2")
 		if err != nil {
 			return errors.Errorf("Error rewriting container config for %s: %w", containerID, err)
 		}
-		logrus.WithField("container_id", containerID).Info("reconfigured storage-driver from aufs to overlay2")
+		logrus.WithField("container_id", containerID).Debug("reconfigured storage-driver from aufs to overlay2")
 	}
 
 	logrus.Info("migrating daemon configuration")

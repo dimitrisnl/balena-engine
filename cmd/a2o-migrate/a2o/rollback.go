@@ -13,7 +13,7 @@ import (
 // reconfigure balenaEngine to use aufs again.
 //
 func Rollback() error {
-	logrus.Debug("starting overlay2 -> aufs rollback")
+	logrus.Info("starting overlay2 -> aufs rollback")
 	logrus.Warnf("rolling back to aufs, this removes %s if it exists", overlayRoot)
 
 	err := removeIfExists(tempTargetRoot, true)
