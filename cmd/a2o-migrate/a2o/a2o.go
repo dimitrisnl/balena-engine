@@ -5,7 +5,7 @@ import "path/filepath"
 const (
 	balenaEngineDir              = "/var/lib/balena-engine"
 	balenaEngineService          = "/lib/systemd/system/balena.service"
-	balenaEngineServiceOverwrite = "/lib/systemd/system/balena.service.d/balena.conf"
+	balenaEngineServiceOverwrite = "/etc/systemd/system/balena.service.d/balena.conf"
 )
 
 var (
