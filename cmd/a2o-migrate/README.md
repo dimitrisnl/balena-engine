@@ -9,8 +9,21 @@ overlay2 tree is built in a temporary location: `/var/lib/balena-engine/overlay2
 We use hardlinks to "duplicate" the layer data. This ensures we have a rollback path at the cost of ~2x the inode
 count.
 
-TODO
-----
 
-- [ ] migrate the daemon service files
-- [ ] implement rollback
+usage
+-----
+
+To run the migration:
+```
+$ a2o-migrate -migrate
+```
+
+Run some containers, verify everything works as expected and then:
+```
+$ a2o-migrate -cleanup
+```
+
+Or if something went wrong / you want to go back:
+```
+$ a2o-migrate -rollback
+```
