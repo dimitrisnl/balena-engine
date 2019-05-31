@@ -35,6 +35,12 @@ func Main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	// parse env vars
+	storageRoot := os.Getenv("BALENA_A2O_STORAGE_ROOT")
+	if storageRoot != "" {
+		a2o.StorageRoot = storageRoot
+	}
+
 	switch {
 	case printVersion:
 		fmt.Fprintf(os.Stdout, "a2o-migrate version %s (build %s)\n", GitVersion, BuildTime)

@@ -21,13 +21,13 @@ func Migrate() error {
 	var err error
 
 	// make sure we actually have an aufs tree to migrate from
-	err = aufsutil.CheckRootExists(balenaEngineDir)
+	err = aufsutil.CheckRootExists(StorageRoot)
 	if err != nil {
 		return err
 	}
 
 	// make sure there isn't an overlay2 tree already
-	err = overlayutil.CheckRootExists(balenaEngineDir)
+	err = overlayutil.CheckRootExists(StorageRoot)
 	if err == nil {
 		logrus.Warn("overlay root found, cleaning up...")
 		err := os.Remove(overlayRoot)
@@ -254,15 +254,15 @@ func Migrate() error {
 	}
 
 	logrus.Info("moving aufs images to overlay")
-	aufsImageDir := filepath.Join(balenaEngineDir, "image", "aufs")
-	overlayImageDir := filepath.Join(balenaEngineDir, "image", "overlay2")
+	aufsImageDir := filepath.Join(StorageRoot, "image", "aufs")
+	overlayImageDir := filepath.Join(StorageRoot, "image", "overlay2")
 	// TODO(robertgzr): when are we removing this?
 	err = replicate(aufsImageDir, overlayImageDir)
 	if err != nil {
 		return errors.Errorf("Error moving aufs images to overlay: %w", err)
 	}
 
-	containerDir := filepath.Join(balenaEngineDir, "containers")
+	containerDir := filepath.Join(StorageRoot, "containers")
 	containerIDs, err := osutil.LoadIDs(containerDir)
 	if err != nil {
 		return errors.Errorf("Error listing containers: %w", err)

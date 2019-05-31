@@ -12,7 +12,7 @@ import (
 // switchContainerStorageDriver rewrites the container config to use a new storage driver,
 // this is the only change needed to make it work after the migration
 func switchContainerStorageDriver(containerID, newStorageDriver string) error {
-	containerConfigPath := filepath.Join(balenaEngineDir, "containers", containerID, "config.v2.json")
+	containerConfigPath := filepath.Join(StorageRoot, "containers", containerID, "config.v2.json")
 	f, err := os.OpenFile(containerConfigPath, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err

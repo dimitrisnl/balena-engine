@@ -3,15 +3,16 @@ package a2o
 import "path/filepath"
 
 const (
-	balenaEngineDir              = "/var/lib/balena-engine"
+	storageRootDefault           = "/var/lib/balena-engine"
 	balenaEngineService          = "/lib/systemd/system/balena.service"
 	balenaEngineServiceOverwrite = "/etc/systemd/system/balena.service.d/balena.conf"
 )
 
 var (
-	aufsRoot       = filepath.Join(balenaEngineDir, "aufs")
-	overlayRoot    = filepath.Join(balenaEngineDir, "overlay2")
-	tempTargetRoot = filepath.Join(balenaEngineDir, "overlay2.temp")
+	StorageRoot    = storageRootDefault
+	aufsRoot       = filepath.Join(StorageRoot, "aufs")
+	overlayRoot    = filepath.Join(StorageRoot, "overlay2")
+	tempTargetRoot = filepath.Join(StorageRoot, "overlay2.temp")
 )
 
 // State models the state of the aufs/overlay2 directory
