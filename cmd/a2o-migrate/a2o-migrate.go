@@ -29,6 +29,15 @@ func Main() {
 	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")
 	flag.BoolVar(&runCleanup, "cleanup", runCleanup, "cleanup leftover migration data")
 	flag.BoolVar(&runRollback, "rollback", runRollback, "go back to aufs")
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "usage: %s [flags]\n", os.Args[0])
+		fmt.Fprintf(flag.CommandLine.Output(), "\nMigrate images, containers and daemon config files from aufs to overlay2...\n  while trying to not waste disk-space.\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "\nflags:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(flag.CommandLine.Output(), "\nenvironment:\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "  BALENA_A2O_STORAGE_ROOT\n\tchange the storage root we operate on (default: %s)\n", a2o.StorageRoot)
+		fmt.Fprintf(flag.CommandLine.Output(), "\n")
+	}
 	flag.Parse()
 
 	if debug {
