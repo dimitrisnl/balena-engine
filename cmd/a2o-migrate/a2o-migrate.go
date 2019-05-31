@@ -35,7 +35,9 @@ func Main() {
 		fmt.Fprintf(flag.CommandLine.Output(), "\nflags:\n")
 		flag.PrintDefaults()
 		fmt.Fprintf(flag.CommandLine.Output(), "\nenvironment:\n")
-		fmt.Fprintf(flag.CommandLine.Output(), "  BALENA_A2O_STORAGE_ROOT\n\tchange the storage root we operate on (default: %s)\n", a2o.StorageRoot)
+		fmt.Fprintf(flag.CommandLine.Output(), "  BALENA_A2O_STORAGE_ROOT\n\tchange the storage root location (default: %s)\n", a2o.StorageRoot)
+		fmt.Fprintf(flag.CommandLine.Output(), "  BALENA_A2O_DAEMON_SERVICE\n\tchange the daemon config location (default: %s)\n", a2o.DaemonService)
+		fmt.Fprintf(flag.CommandLine.Output(), "  BALENA_A2O_DAEMON_SERVICE_OVERWRITE\n\tchange the daemon config overwrite location (default: %s)\n", a2o.DaemonServiceOverwrite)
 		fmt.Fprintf(flag.CommandLine.Output(), "\n")
 	}
 	flag.Parse()
@@ -45,9 +47,14 @@ func Main() {
 	}
 
 	// parse env vars
-	storageRoot := os.Getenv("BALENA_A2O_STORAGE_ROOT")
-	if storageRoot != "" {
-		a2o.StorageRoot = storageRoot
+	if env, ok := os.LookupEnv("BALENA_A2O_STORAGE_ROOT"); ok {
+		a2o.StorageRoot = env
+	}
+	if env, ok := os.LookupEnv("BALENA_A2O_DAEMON_SERVICE"); ok {
+		a2o.DaemonService = env
+	}
+	if env, ok := os.LookupEnv("BALENA_A2O_DAEMON_SERVICE_OVERWRITE"); ok {
+		a2o.DaemonServiceOverwrite = env
 	}
 
 	switch {

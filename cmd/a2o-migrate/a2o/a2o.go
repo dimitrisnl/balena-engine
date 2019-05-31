@@ -3,13 +3,16 @@ package a2o
 import "path/filepath"
 
 const (
-	storageRootDefault           = "/var/lib/balena-engine"
-	balenaEngineService          = "/lib/systemd/system/balena.service"
-	balenaEngineServiceOverwrite = "/etc/systemd/system/balena.service.d/balena.conf"
+	storageRootDefault            = "/var/lib/balena-engine"
+	daemonServiceDefault          = "/lib/systemd/system/balena.service"
+	daemonServiceOverwriteDefault = "/etc/systemd/system/balena.service.d/balena.conf"
 )
 
 var (
-	StorageRoot    = storageRootDefault
+	StorageRoot            = storageRootDefault
+	DaemonService          = daemonServiceDefault
+	DaemonServiceOverwrite = daemonServiceOverwriteDefault
+
 	aufsRoot       = filepath.Join(StorageRoot, "aufs")
 	overlayRoot    = filepath.Join(StorageRoot, "overlay2")
 	tempTargetRoot = filepath.Join(StorageRoot, "overlay2.temp")

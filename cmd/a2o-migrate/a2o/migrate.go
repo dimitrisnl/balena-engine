@@ -277,11 +277,11 @@ func Migrate() error {
 	}
 
 	logrus.Info("migrating daemon configuration")
-	err = osutil.Sed(balenaEngineService, "aufs", "overlay2", -1)
+	err = osutil.Sed(DaemonService, "aufs", "overlay2", -1)
 	if err != nil {
 		return errors.Errorf("Error migrating daemon confguration: %w", err)
 	}
-	err = osutil.Sed(balenaEngineServiceOverwrite, "aufs", "overlay2", -1)
+	err = osutil.Sed(DaemonServiceOverwrite, "aufs", "overlay2", -1)
 	if err != nil {
 		return errors.Errorf("Error migrating daemon confguration: %w", err)
 	}
