@@ -1,4 +1,4 @@
-package main // import "github.com/balena-os/balena-engine/cmd/a2o-migrate"
+package a2omigrate // import "github.com/docker/docker/cmd/a2o-migrate"
 
 import (
 	"flag"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
+	"github.com/docker/docker/cmd/a2o-migrate/a2o"
 )
 
 var ( // auto generated on build
@@ -23,7 +23,7 @@ var ( // flag values
 	runRollback  = false
 )
 
-func main() {
+func Main() {
 	flag.BoolVar(&debug, "debug", debug, "enable debug logging")
 	flag.BoolVar(&printVersion, "version", printVersion, "print version")
 	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")

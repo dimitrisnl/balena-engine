@@ -9,7 +9,7 @@ import (
 	"golang.org/x/sys/unix"
 	errors "golang.org/x/xerrors"
 
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
+	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 	"github.com/docker/docker/daemon/graphdriver/overlay2"
 )
 

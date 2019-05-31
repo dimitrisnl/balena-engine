@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
+	filepath "path/filepath"
+
 	"github.com/containerd/containerd/cmd/containerd"
 	containerdShim "github.com/containerd/containerd/cmd/containerd-shim"
 	"github.com/containerd/containerd/cmd/ctr"
 	"github.com/docker/cli/cmd/docker"
+	"github.com/docker/docker/cmd/a2o-migrate"
 	"github.com/docker/docker/cmd/dockerd"
 	"github.com/docker/docker/pkg/reexec"
 	"github.com/docker/libnetwork/cmd/proxy"
 	"github.com/opencontainers/runc"
-
-	"os"
-	filepath "path/filepath"
 )
 
 func main() {
@@ -37,6 +38,8 @@ func main() {
 		runc.Main()
 	case "balena-proxy", "balena-engine-proxy":
 		proxy.Main()
+	case "a2o-migrate":
+		a2omigrate.Main()
 	default:
 		fmt.Fprintf(os.Stderr, "error: unkown command: %v\n", command)
 		os.Exit(1)

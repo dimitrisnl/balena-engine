@@ -35,5 +35,6 @@ ln -s balena-engine "$dst/balena-engine-containerd-ctr"
 ln -s balena-engine "$dst/balena-engine-containerd-shim"
 ln -s balena-engine "$dst/balena-engine-proxy"
 ln -s balena-engine "$dst/balena-engine-runc"
+ln -s balena-engine "$dst/a2o-migrate"
 
 tar czfv "balena-engine-$version-$arch.tar.gz" "$dst"

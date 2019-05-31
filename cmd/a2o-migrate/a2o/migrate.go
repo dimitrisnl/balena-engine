@@ -1,4 +1,4 @@
-package a2o // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/a2o"
+package a2o // import "github.com/docker/docker/cmd/a2o-migrate/a2o"
 
 import (
 	"io/ioutil"
@@ -9,9 +9,9 @@ import (
 	"golang.org/x/sys/unix"
 	errors "golang.org/x/xerrors"
 
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/aufsutil"
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/overlayutil"
+	"github.com/docker/docker/cmd/a2o-migrate/aufsutil"
+	"github.com/docker/docker/cmd/a2o-migrate/osutil"
+	"github.com/docker/docker/cmd/a2o-migrate/overlayutil"
 )
 
 // Migrate migrates the state of the storage from aufs -> overlay2

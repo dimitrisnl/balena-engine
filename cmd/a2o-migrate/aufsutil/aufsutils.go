@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	errors "golang.org/x/xerrors"
 
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
+	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
 
 const (

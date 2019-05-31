@@ -1,4 +1,4 @@
-package osutil // import "github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
+package osutil // import "github.com/docker/docker/cmd/a2o-migrate/osutil"
 
 import (
 	"io/ioutil"

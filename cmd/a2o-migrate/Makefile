@@ -5,7 +5,7 @@ GO_LDFLAGS=-extldflags "-fno-PIC -static"
 GO_BUILDFLAGS=-ldflags '$(GO_LDFLAGS) $(GO_BUILDINFO)' -buildmode pie -tags 'osusergo netgo static_build'
 
 a2o-migrate: clean
-	go build $(GO_BUILDFLAGS) -o ./$@ .
+	go build $(GO_BUILDFLAGS) -o ./$@ ./cli
 
 test-unit:
 	go test -v ./a2o

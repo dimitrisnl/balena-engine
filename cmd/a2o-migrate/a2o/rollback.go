@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/balena-os/balena-engine/cmd/a2o-migrate/osutil"
+	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
 
 // Rollback should be run after a unsuccesful migration.
