@@ -276,16 +276,6 @@ func Migrate() error {
 		logrus.WithField("container_id", containerID).Debug("reconfigured storage-driver from aufs to overlay2")
 	}
 
-	logrus.Info("migrating daemon configuration")
-	err = osutil.Sed(DaemonService, "aufs", "overlay2", -1)
-	if err != nil {
-		return errors.Errorf("Error migrating daemon confguration: %w", err)
-	}
-	err = osutil.Sed(DaemonServiceOverwrite, "aufs", "overlay2", -1)
-	if err != nil {
-		return errors.Errorf("Error migrating daemon confguration: %w", err)
-	}
-
 	logrus.Info("finished migration")
 	return nil
 }
