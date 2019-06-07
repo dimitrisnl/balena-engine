@@ -1,13 +1,13 @@
 package a2o // import "github.com/docker/docker/cmd/a2o-migrate/a2o"
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
-	errors "golang.org/x/xerrors"
 
 	"github.com/docker/docker/cmd/a2o-migrate/aufsutil"
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
@@ -32,7 +32,7 @@ func Migrate() error {
 		logrus.Warn("overlay root found, cleaning up...")
 		err := os.Remove(overlayRoot)
 		if err != nil {
-			return errors.Errorf("Error cleaning up overlay2 root: %w", err)
+			return fmt.Errorf("Error cleaning up overlay2 root: %v", err)
 		}
 	}
 
@@ -45,7 +45,7 @@ func Migrate() error {
 	// get all layers
 	layerIDs, err := osutil.LoadIDs(diffDir)
 	if err != nil {
-		return errors.Errorf("Error loading layer ids: %w", err)
+		return fmt.Errorf("Error loading layer ids: %v", err)
 	}
 	logrus.Debugf("layer ids in %s: %+#v", diffDir, layerIDs)
 
@@ -58,7 +58,7 @@ func Migrate() error {
 		logrus.Debug("parsing parent ids")
 		parentIDs, err := aufsutil.GetParentIDs(aufsRoot, layerID)
 		if err != nil {
-			return errors.Errorf("Error loading parent IDs for %s: %w", layerID, err)
+			return fmt.Errorf("Error loading parent IDs for %s: %v", layerID, err)
 		}
 		layer.ParentIDs = parentIDs
 
@@ -107,7 +107,7 @@ func Migrate() error {
 			return nil
 		})
 		if err != nil {
-			return errors.Errorf("Error walking filetree for %s: %w", layerID, err)
+			return fmt.Errorf("Error walking filetree for %s: %v", layerID, err)
 		}
 
 		state.Layers = append(state.Layers, layer)
@@ -128,14 +128,14 @@ func Migrate() error {
 		// create /:layer_id dir
 		err := os.MkdirAll(layerDir, os.ModeDir|0700)
 		if err != nil {
-			return errors.Errorf("Error creating layer directory for %s: %w", layer.ID, err)
+			return fmt.Errorf("Error creating layer directory for %s: %v", layer.ID, err)
 		}
 
 		logrus.Debug("creating layer link")
 		// create /:layer_id/link file and /l/:layer_ref file
 		_, err = overlayutil.CreateLayerLink(tempTargetRoot, layer.ID)
 		if err != nil {
-			return errors.Errorf("Error creating layer link dir for %s: %w", layer.ID, err)
+			return fmt.Errorf("Error creating layer link dir for %s: %v", layer.ID, err)
 		}
 
 		logrus.Debug("processing parent layers")
@@ -147,20 +147,20 @@ func Migrate() error {
 			parentLayerDir := filepath.Join(tempTargetRoot, parentID)
 			ok, err := osutil.Exists(parentLayerDir, true)
 			if err != nil {
-				return errors.Errorf("Error checking for parent layer dir for %s: %w", layer.ID, err)
+				return fmt.Errorf("Error checking for parent layer dir for %s: %v", layer.ID, err)
 			}
 			if !ok {
 				// parent layer hasn't been processed separately yet.
 				logrus.Debugf("creating parent layer base dir %s", parentLayerDir)
 				err := os.MkdirAll(parentLayerDir, os.ModeDir|0700)
 				if err != nil {
-					return errors.Errorf("Error creating layer directory for parent layer %s: %w", parentID, err)
+					return fmt.Errorf("Error creating layer directory for parent layer %s: %v", parentID, err)
 				}
 			}
 			logrus.Debug("creating parent layer link")
 			parentRef, err := overlayutil.CreateLayerLink(tempTargetRoot, parentID)
 			if err != nil {
-				return errors.Errorf("Error creating layer link dir for parent layer %s: %w", parentID, err)
+				return fmt.Errorf("Error creating layer link dir for parent layer %s: %v", parentID, err)
 			}
 			lower = overlayutil.AppendLower(lower, parentRef)
 		}
@@ -169,13 +169,13 @@ func Migrate() error {
 			logrus.Debugf("creating lower at %s", lowerFile)
 			err := ioutil.WriteFile(lowerFile, []byte(lower), 0644)
 			if err != nil {
-				return errors.Errorf("Error creating lower file for %s: %w", layer.ID, err)
+				return fmt.Errorf("Error creating lower file for %s: %v", layer.ID, err)
 			}
 			layerWorkDir := filepath.Join(layerDir, "work")
 			logrus.Debugf("creating work dir at %s", lowerFile)
 			err = os.MkdirAll(layerWorkDir, os.ModeDir|0700)
 			if err != nil {
-				return errors.Errorf("Error creating work dir for %s: %w", layer.ID, err)
+				return fmt.Errorf("Error creating work dir for %s: %v", layer.ID, err)
 			}
 		}
 
@@ -187,7 +187,7 @@ func Migrate() error {
 		// TODO(robertgzr): when are we removing this?
 		err = replicate(aufsLayerDir, overlayLayerDir)
 		if err != nil {
-			return errors.Errorf("Error moving layer data to overlay2: %w", err)
+			return fmt.Errorf("Error moving layer data to overlay2: %v", err)
 		}
 
 		// migrate metadata files
@@ -201,13 +201,13 @@ func Migrate() error {
 				// set the opque xattr
 				err := overlayutil.SetOpaque(metaPath)
 				if err != nil {
-					return errors.Errorf("Error marking %s as opque: %w", metaPath, err)
+					return fmt.Errorf("Error marking %s as opque: %v", metaPath, err)
 				}
 				// remove aufs metadata file
 				aufsMetaFile := filepath.Join(metaPath, aufsutil.OpaqueDirMarkerFilename)
 				err = os.Remove(aufsMetaFile)
 				if err != nil {
-					return errors.Errorf("Error removing opque meta file: %w", err)
+					return fmt.Errorf("Error removing opque meta file: %v", err)
 				}
 
 			case MetaWhiteout:
@@ -215,7 +215,7 @@ func Migrate() error {
 				// create the 0x0 char device
 				err := overlayutil.SetWhiteout(metaPath)
 				if err != nil {
-					return errors.Errorf("Error marking %s as whiteout: %w", metaPath, err)
+					return fmt.Errorf("Error marking %s as whiteout: %v", metaPath, err)
 				}
 				metaDir, metaFile := filepath.Split(metaPath)
 				aufsMetaFile := filepath.Join(metaDir, aufsutil.WhiteoutPrefix+metaFile)
@@ -223,23 +223,23 @@ func Migrate() error {
 				// chown the new char device with the old uid/gid
 				uid, gid, err := osutil.GetUIDAndGID(aufsMetaFile)
 				if err != nil {
-					return errors.Errorf("Error getting UID and GID: %w", err)
+					return fmt.Errorf("Error getting UID and GID: %v", err)
 				}
 				err = unix.Chown(metaPath, uid, gid)
 				if err != nil {
-					return errors.Errorf("Error chowning character device: %w", err)
+					return fmt.Errorf("Error chowning character device: %v", err)
 				}
 
 				err = os.Remove(aufsMetaFile)
 				if err != nil {
-					return errors.Errorf("Error removing aufs whiteout file: %w", err)
+					return fmt.Errorf("Error removing aufs whiteout file: %v", err)
 				}
 
 			case MetaOther:
 				logrus.WithField("meta_type", "whiteoutmeta").Debugf("removing %s from overlay", meta.Path)
 				err = os.Remove(metaPath)
 				if err != nil {
-					return errors.Errorf("Error removing useless aufs meta file at: %w", err)
+					return fmt.Errorf("Error removing useless aufs meta file at: %v", err)
 				}
 			}
 		}
@@ -250,7 +250,7 @@ func Migrate() error {
 	logrus.Debug("moving from temporary root to overlay2 root")
 	err = os.Rename(tempTargetRoot, overlayRoot)
 	if err != nil {
-		return errors.Errorf("Error moving from temporary root: %w", err)
+		return fmt.Errorf("Error moving from temporary root: %v", err)
 	}
 
 	logrus.Info("moving aufs images to overlay")
@@ -259,19 +259,19 @@ func Migrate() error {
 	// TODO(robertgzr): when are we removing this?
 	err = replicate(aufsImageDir, overlayImageDir)
 	if err != nil {
-		return errors.Errorf("Error moving aufs images to overlay: %w", err)
+		return fmt.Errorf("Error moving aufs images to overlay: %v", err)
 	}
 
 	containerDir := filepath.Join(StorageRoot, "containers")
 	containerIDs, err := osutil.LoadIDs(containerDir)
 	if err != nil {
-		return errors.Errorf("Error listing containers: %w", err)
+		return fmt.Errorf("Error listing containers: %v", err)
 	}
 	logrus.Infof("moving storage-driver of %d container(s) to overlay", len(containerIDs))
 	for _, containerID := range containerIDs {
 		err := switchContainerStorageDriver(containerID, "overlay2")
 		if err != nil {
-			return errors.Errorf("Error rewriting container config for %s: %w", containerID, err)
+			return fmt.Errorf("Error rewriting container config for %s: %v", containerID, err)
 		}
 		logrus.WithField("container_id", containerID).Debug("reconfigured storage-driver from aufs to overlay2")
 	}

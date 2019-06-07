@@ -1,13 +1,14 @@
 package overlayutil
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
-	errors "golang.org/x/xerrors"
 
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 	"github.com/docker/docker/daemon/graphdriver/overlay2"
@@ -38,7 +39,7 @@ func CreateLayerLink(root, layerID string) (layerRef string, err error) {
 	layerLinkFile := filepath.Join(root, layerID, "link")
 	ok, err := osutil.Exists(layerLinkFile, false)
 	if err != nil {
-		return "", errors.Errorf("Error checking for %s: %w", layerLinkFile, err)
+		return "", fmt.Errorf("Error checking for %s: %v", layerLinkFile, err)
 	}
 	if ok {
 		// Return early if it already exists.
@@ -46,21 +47,21 @@ func CreateLayerLink(root, layerID string) (layerRef string, err error) {
 		// previously appeared as a parent layer.
 		ref, err := ioutil.ReadFile(layerLinkFile)
 		if err != nil {
-			return "", errors.Errorf("Error reading %s: %w", layerLinkFile, err)
+			return "", fmt.Errorf("Error reading %s: %v", layerLinkFile, err)
 		}
 		return string(ref), nil
 	}
 	layerRefDir := filepath.Join(root, "l")
 	ok, err = osutil.Exists(layerRefDir, true)
 	if err != nil {
-		return "", errors.Errorf("Error checking for %s: %s", layerRefDir, err)
+		return "", fmt.Errorf("Error checking for %s: %v", layerRefDir, err)
 	}
 	if !ok {
 		// create layer ref dir
 		// to avoid having to do this outside of this function
 		err := os.MkdirAll(layerRefDir, 0700)
 		if err != nil {
-			return "", errors.Errorf("Error creating directory %s: %w", layerRefDir, err)
+			return "", fmt.Errorf("Error creating directory %s: %v", layerRefDir, err)
 		}
 	}
 	// idLength
@@ -68,13 +69,13 @@ func CreateLayerLink(root, layerID string) (layerRef string, err error) {
 	layerRef = overlay2.GenerateID(overlay2.IDLength)
 	err = ioutil.WriteFile(layerLinkFile, []byte(layerRef), 0644)
 	if err != nil {
-		return "", errors.Errorf("Error writing to %s: %w", layerLinkFile, err)
+		return "", fmt.Errorf("Error writing to %s: %v", layerLinkFile, err)
 	}
 	layerDiffDir := filepath.Join("..", layerID, "diff")
 	layerLinkRef := filepath.Join(layerRefDir, layerRef)
 	err = os.Symlink(layerDiffDir, layerLinkRef)
 	if err != nil {
-		return "", errors.Errorf("Error creating symlink %s -> %s: %w", layerDiffDir, layerLinkRef, err)
+		return "", fmt.Errorf("Error creating symlink %s -> %s: %v", layerDiffDir, layerLinkRef, err)
 	}
 	return layerRef, nil
 }

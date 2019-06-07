@@ -2,20 +2,20 @@ package aufsutil
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	errors "golang.org/x/xerrors"
 
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
 
 const (
-	WhiteoutPrefix = ".wh."
-	WhiteoutMetaPrefix = ".wh..wh."
+	WhiteoutPrefix          = ".wh."
+	WhiteoutMetaPrefix      = ".wh..wh."
 	OpaqueDirMarkerFilename = ".wh..wh..opq"
 )
 
