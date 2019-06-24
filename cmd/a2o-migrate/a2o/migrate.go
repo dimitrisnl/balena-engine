@@ -18,10 +18,8 @@ import (
 func Migrate() error {
 	logrus.Info("starting aufs -> overlay2 migration")
 
-	var err error
-
 	// make sure we actually have an aufs tree to migrate from
-	err = aufsutil.CheckRootExists(StorageRoot)
+	err := aufsutil.CheckRootExists(StorageRoot)
 	if err != nil {
 		return err
 	}
