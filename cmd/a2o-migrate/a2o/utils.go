@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
 
 // switchContainerStorageDriver rewrites the container config to use a new storage driver,
@@ -74,4 +76,19 @@ func replicate(sourceDir, targetDir string) error {
 
 		return nil
 	})
+}
+
+func removeDirIfExists(path string) error {
+	ok, err := osutil.Exists(path, true)
+	if err != nil {
+		return err
+	}
+	if ok {
+		logrus.Infof("removing %s", path)
+		err = os.RemoveAll(path)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

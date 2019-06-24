@@ -1,11 +1,9 @@
 package a2o
 
 import (
-	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
 
 // Rollback should be run after a unsuccesful migration.
@@ -14,32 +12,17 @@ import (
 //
 func Rollback() error {
 	logrus.Info("starting overlay2 -> aufs rollback")
-	logrus.Warnf("rolling back to aufs, this removes %s if it exists", overlayRoot)
 
-	err := removeIfExists(tempTargetRoot, true)
+	err := removeDirIfExists(tempTargetRoot)
 	if err != nil {
 		return err
 	}
 
-	err = removeIfExists(overlayRoot, true)
+	err = removeDirIfExists(overlayRoot)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
 
-func removeIfExists(path string, isDir bool) error {
-	ok, err := osutil.Exists(path, isDir)
-	if err != nil {
-		return err
-	}
-	if ok {
-		logrus.Infof("removing %s", path)
-		err = os.Remove(path)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }

@@ -1,7 +1,7 @@
 package a2o
 
 import (
-	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 )
@@ -10,9 +10,8 @@ import (
 // It removes the old aufs directory.
 func Cleanup() error {
 	logrus.Info("starting cleanup")
-	logrus.Warnf("This will remove %s", aufsRoot)
 
-	err := os.Remove(aufsRoot)
+	err := removeDirIfExists(aufsRoot)
 	if err != nil {
 		return err
 	}
