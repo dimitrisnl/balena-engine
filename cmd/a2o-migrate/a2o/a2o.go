@@ -2,12 +2,8 @@ package a2o
 
 import "path/filepath"
 
-const (
-	storageRootDefault = "/var/lib/balena-engine"
-)
-
 var (
-	StorageRoot = storageRootDefault
+	StorageRoot = "/var/lib/balena-engine"
 
 	aufsRoot       = filepath.Join(StorageRoot, "aufs")
 	overlayRoot    = filepath.Join(StorageRoot, "overlay2")
