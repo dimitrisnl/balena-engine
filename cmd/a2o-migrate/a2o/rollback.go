@@ -23,6 +23,11 @@ func Rollback() error {
 		return err
 	}
 
+	overlayImageDir := filepath.Join(StorageRoot, "image", "overlay2")
+	err = removeDirIfExists(overlayImageDir)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

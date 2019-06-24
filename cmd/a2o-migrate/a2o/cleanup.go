@@ -16,5 +16,11 @@ func Cleanup() error {
 		return err
 	}
 
+	aufsImageDir := filepath.Join(StorageRoot, "image", "aufs")
+	err = removeDirIfExists(aufsImageDir)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
