@@ -177,12 +177,11 @@ func Migrate() error {
 			}
 		}
 
-		overlayLayerDir := filepath.Join(layerDir, "diff")
-		aufsLayerDir := filepath.Join(aufsRoot, "diff", layer.ID)
-
 		logrus.Debug("hardlinking aufs data to overlay")
-		// move data over
-		// TODO(robertgzr): when are we removing this?
+		var (
+			overlayLayerDir = filepath.Join(layerDir, "diff")
+			aufsLayerDir    = filepath.Join(aufsRoot, "diff", layer.ID)
+		)
 		err = replicate(aufsLayerDir, overlayLayerDir)
 		if err != nil {
 			return fmt.Errorf("Error moving layer data to overlay2: %v", err)
@@ -252,12 +251,13 @@ func Migrate() error {
 	}
 
 	logrus.Info("moving aufs images to overlay")
-	aufsImageDir := filepath.Join(StorageRoot, "image", "aufs")
-	overlayImageDir := filepath.Join(StorageRoot, "image", "overlay2")
-	// TODO(robertgzr): when are we removing this?
+	var (
+		aufsImageDir    = filepath.Join(StorageRoot, "image", "aufs")
+		overlayImageDir = filepath.Join(StorageRoot, "image", "overlay2")
+	)
 	err = replicate(aufsImageDir, overlayImageDir)
 	if err != nil {
-		return fmt.Errorf("Error moving aufs images to overlay: %v", err)
+		return fmt.Errorf("Error moving images from aufs to overlay: %v", err)
 	}
 
 	containerDir := filepath.Join(StorageRoot, "containers")
