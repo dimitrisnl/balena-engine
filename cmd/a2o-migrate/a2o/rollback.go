@@ -13,12 +13,12 @@ import (
 func Rollback() error {
 	logrus.Info("starting overlay2 -> aufs rollback")
 
-	err := removeDirIfExists(tempTargetRoot)
+	err := removeDirIfExists(tempTargetRoot())
 	if err != nil {
 		return err
 	}
 
-	err = removeDirIfExists(overlayRoot)
+	err = removeDirIfExists(overlayRoot())
 	if err != nil {
 		return err
 	}

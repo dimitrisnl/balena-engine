@@ -2,13 +2,11 @@ package a2o
 
 import "path/filepath"
 
-var (
-	StorageRoot = "/var/lib/balena-engine"
+var StorageRoot = "/var/lib/balena-engine"
 
-	aufsRoot       = filepath.Join(StorageRoot, "aufs")
-	overlayRoot    = filepath.Join(StorageRoot, "overlay2")
-	tempTargetRoot = filepath.Join(StorageRoot, "overlay2.temp")
-)
+func aufsRoot() string       { return filepath.Join(StorageRoot, "aufs") }
+func overlayRoot() string    { return filepath.Join(StorageRoot, "overlay2") }
+func tempTargetRoot() string { return filepath.Join(StorageRoot, "overlay2.temp") }
 
 // State models the state of the aufs/overlay2 directory
 type State struct {

@@ -49,6 +49,8 @@ func Main() {
 		a2o.StorageRoot = env
 	}
 
+	logrus.Warnf("storage root: %v", a2o.StorageRoot)
+
 	switch {
 	case printVersion:
 		fmt.Fprintf(os.Stdout, "a2o-migrate version %s (build %s)\n", GitVersion, BuildTime)

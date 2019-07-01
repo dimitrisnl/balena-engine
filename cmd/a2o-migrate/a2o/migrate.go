@@ -28,7 +28,7 @@ func Migrate() error {
 	err = overlayutil.CheckRootExists(StorageRoot)
 	if err == nil {
 		logrus.Warn("overlay root found, cleaning up...")
-		err := os.Remove(overlayRoot)
+		err := os.Remove(overlayRoot())
 		if err != nil {
 			return fmt.Errorf("Error cleaning up overlay2 root: %v", err)
 		}
@@ -38,7 +38,7 @@ func Migrate() error {
 		state State
 	)
 
-	diffDir := filepath.Join(aufsRoot, "diff")
+	diffDir := filepath.Join(aufsRoot(), "diff")
 
 	// get all layers
 	layerIDs, err := osutil.LoadIDs(diffDir)
@@ -54,7 +54,7 @@ func Migrate() error {
 
 		// get parent layers
 		logrus.Debug("parsing parent ids")
-		parentIDs, err := aufsutil.GetParentIDs(aufsRoot, layerID)
+		parentIDs, err := aufsutil.GetParentIDs(aufsRoot(), layerID)
 		if err != nil {
 			return fmt.Errorf("Error loading parent IDs for %s: %v", layerID, err)
 		}
@@ -119,7 +119,7 @@ func Migrate() error {
 		logrus := logrus.WithField("layer_id", layer.ID)
 
 		var (
-			layerDir = filepath.Join(tempTargetRoot, layer.ID)
+			layerDir = filepath.Join(tempTargetRoot(), layer.ID)
 		)
 
 		logrus.Debugf("creating base dir %s", layerDir)
@@ -131,7 +131,7 @@ func Migrate() error {
 
 		logrus.Debug("creating layer link")
 		// create /:layer_id/link file and /l/:layer_ref file
-		_, err = overlayutil.CreateLayerLink(tempTargetRoot, layer.ID)
+		_, err = overlayutil.CreateLayerLink(tempTargetRoot(), layer.ID)
 		if err != nil {
 			return fmt.Errorf("Error creating layer link dir for %s: %v", layer.ID, err)
 		}
@@ -142,7 +142,7 @@ func Migrate() error {
 		for _, parentID := range layer.ParentIDs {
 			logrus := logrus.WithField("parent_layer_id", parentID)
 
-			parentLayerDir := filepath.Join(tempTargetRoot, parentID)
+			parentLayerDir := filepath.Join(tempTargetRoot(), parentID)
 			ok, err := osutil.Exists(parentLayerDir, true)
 			if err != nil {
 				return fmt.Errorf("Error checking for parent layer dir for %s: %v", layer.ID, err)
@@ -156,7 +156,7 @@ func Migrate() error {
 				}
 			}
 			logrus.Debug("creating parent layer link")
-			parentRef, err := overlayutil.CreateLayerLink(tempTargetRoot, parentID)
+			parentRef, err := overlayutil.CreateLayerLink(tempTargetRoot(), parentID)
 			if err != nil {
 				return fmt.Errorf("Error creating layer link dir for parent layer %s: %v", parentID, err)
 			}
@@ -180,7 +180,7 @@ func Migrate() error {
 		logrus.Debug("hardlinking aufs data to overlay")
 		var (
 			overlayLayerDir = filepath.Join(layerDir, "diff")
-			aufsLayerDir    = filepath.Join(aufsRoot, "diff", layer.ID)
+			aufsLayerDir    = filepath.Join(aufsRoot(), "diff", layer.ID)
 		)
 		err = replicate(aufsLayerDir, overlayLayerDir)
 		if err != nil {
@@ -245,7 +245,7 @@ func Migrate() error {
 	}
 
 	logrus.Debug("moving from temporary root to overlay2 root")
-	err = os.Rename(tempTargetRoot, overlayRoot)
+	err = os.Rename(tempTargetRoot(), overlayRoot())
 	if err != nil {
 		return fmt.Errorf("Error moving from temporary root: %v", err)
 	}

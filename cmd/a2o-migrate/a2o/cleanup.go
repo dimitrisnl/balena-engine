@@ -11,7 +11,7 @@ import (
 func Cleanup() error {
 	logrus.Info("starting cleanup")
 
-	err := removeDirIfExists(aufsRoot)
+	err := removeDirIfExists(aufsRoot())
 	if err != nil {
 		return err
 	}
