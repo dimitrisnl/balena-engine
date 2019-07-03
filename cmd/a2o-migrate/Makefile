@@ -8,7 +8,7 @@ a2o-migrate: clean
 	go build $(GO_BUILDFLAGS) -o ./$@ ./cli
 
 test-unit:
-	go test -v ./a2o
+	go test -cover -v ./...
 
 test-integration: a2o-migrate
 	env CONTAINERIZED=1 ./test/integration.sh
