@@ -12,6 +12,7 @@ import (
 	"github.com/docker/docker/cmd/a2o-migrate/aufsutil"
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 	"github.com/docker/docker/cmd/a2o-migrate/overlayutil"
+	"github.com/docker/docker/pkg/archive"
 )
 
 // Migrate migrates the state of the storage from aufs -> overlay2
@@ -201,7 +202,7 @@ func Migrate() error {
 					return fmt.Errorf("Error marking %s as opque: %v", metaPath, err)
 				}
 				// remove aufs metadata file
-				aufsMetaFile := filepath.Join(metaPath, aufsutil.OpaqueDirMarkerFilename)
+				aufsMetaFile := filepath.Join(metaPath, archive.WhiteoutOpaqueDir)
 				err = os.Remove(aufsMetaFile)
 				if err != nil {
 					return fmt.Errorf("Error removing opque meta file: %v", err)
@@ -215,7 +216,7 @@ func Migrate() error {
 					return fmt.Errorf("Error marking %s as whiteout: %v", metaPath, err)
 				}
 				metaDir, metaFile := filepath.Split(metaPath)
-				aufsMetaFile := filepath.Join(metaDir, aufsutil.WhiteoutPrefix+metaFile)
+				aufsMetaFile := filepath.Join(metaDir, archive.WhiteoutPrefix+metaFile)
 
 				// chown the new char device with the old uid/gid
 				uid, gid, err := osutil.GetUIDAndGID(aufsMetaFile)

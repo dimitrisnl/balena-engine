@@ -1,3 +1,4 @@
+// TODO: do we need to handle .wh..wh.plnk layer hardlinks?
 package aufsutil
 
 import (
@@ -11,12 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
-)
-
-const (
-	WhiteoutPrefix          = ".wh."
-	WhiteoutMetaPrefix      = ".wh..wh."
-	OpaqueDirMarkerFilename = ".wh..wh..opq"
+	"github.com/docker/docker/pkg/archive"
 )
 
 var (
@@ -39,21 +35,21 @@ func CheckRootExists(engineDir string) error {
 }
 
 func IsWhiteout(filename string) bool {
-	return strings.HasPrefix(filename, WhiteoutPrefix)
+	return strings.HasPrefix(filename, archive.WhiteoutPrefix)
 }
 
 func IsWhiteoutMeta(filename string) bool {
-	return strings.HasPrefix(filename, WhiteoutMetaPrefix)
+	return strings.HasPrefix(filename, archive.WhiteoutMetaPrefix)
 }
 
 func IsOpaqueParentDir(filename string) bool {
-	return filename == OpaqueDirMarkerFilename
+	return filename == archive.WhiteoutOpaqueDir
 }
 
 func StripWhiteoutPrefix(filename string) string {
 	out := filename
-	for IsWhiteout(out) {
-		out = strings.TrimPrefix(out, ".wh.")
+	for IsWhiteout(out) && !IsWhiteoutMeta(out) {
+		out = strings.TrimPrefix(out, archive.WhiteoutPrefix)
 	}
 	return out
 }
