@@ -2,6 +2,7 @@ package a2o
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,23 @@ import (
 
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
+
+func switchAllContainersStorageDriver(newStorageDriver string) error {
+	containerDir := filepath.Join(StorageRoot, "containers")
+	containerIDs, err := osutil.LoadIDs(containerDir)
+	if err != nil {
+		return fmt.Errorf("Error listing containers: %v", err)
+	}
+	logrus.Infof("migrating %v container(s) to overlay2", len(containerIDs))
+	for _, containerID := range containerIDs {
+		err := switchContainerStorageDriver(containerID, "overlay2")
+		if err != nil {
+			return fmt.Errorf("Error rewriting container config for %s: %v", containerID, err)
+		}
+		logrus.WithField("container_id", containerID).Debugf("reconfigured storage-driver to %s", newStorageDriver)
+	}
+	return nil
+}
 
 // switchContainerStorageDriver rewrites the container config to use a new storage driver,
 // this is the only change needed to make it work after the migration

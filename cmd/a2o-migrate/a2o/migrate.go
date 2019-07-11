@@ -280,18 +280,9 @@ func Migrate() error {
 		return fmt.Errorf("Error moving from temporary root: %v", err)
 	}
 
-	containerDir := filepath.Join(StorageRoot, "containers")
-	containerIDs, err := osutil.LoadIDs(containerDir)
+	err = switchAllContainersStorageDriver("overlay2")
 	if err != nil {
-		return fmt.Errorf("Error listing containers: %v", err)
-	}
-	logrus.Infof("moving storage-driver of %d container(s) to overlay", len(containerIDs))
-	for _, containerID := range containerIDs {
-		err := switchContainerStorageDriver(containerID, "overlay2")
-		if err != nil {
-			return fmt.Errorf("Error rewriting container config for %s: %v", containerID, err)
-		}
-		logrus.WithField("container_id", containerID).Debug("reconfigured storage-driver from aufs to overlay2")
+		return fmt.Errorf("Error migrating containers to overlay2: %v", err)
 	}
 
 	logrus.Info("finished migration")
