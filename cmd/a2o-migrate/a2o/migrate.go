@@ -41,6 +41,12 @@ func Migrate() error {
 
 	diffDir := filepath.Join(aufsRoot(), "diff")
 
+	// Step 1:
+	// Scan aufs layer data and build structure holding all the relevant information
+	// needed to replicate on overlayfs.
+	// We need to pay special attention to the whiteout metadata files used by aufs to
+	// mark deleted files and empty directories.
+
 	// get all layers
 	layerIDs, err := osutil.LoadIDs(diffDir)
 	if err != nil {
@@ -114,6 +120,13 @@ func Migrate() error {
 	}
 
 	logrus.Infof("moving %d layer(s) to overlay", len(state.Layers))
+
+	// Step 3:
+	// Build up the overlayfs layer data from the state structure.
+	// This ignores the special files at first and just replicates the data
+	// (using hardlinks to save space).
+	// In a second step we use the state.Meta data to delete aufs whiteout files
+	// and create the special files / set file attributes used by overlayfs.
 
 	// move to overlay filetree
 	for _, layer := range state.Layers {
@@ -245,11 +258,11 @@ func Migrate() error {
 		logrus.Debug("done")
 	}
 
-	logrus.Debug("moving from temporary root to overlay2 root")
-	err = os.Rename(tempTargetRoot(), overlayRoot())
-	if err != nil {
-		return fmt.Errorf("Error moving from temporary root: %v", err)
-	}
+	// Step 4:
+	// Finalize the migration:
+	// - duplicate aufs images to $storageRoot/image/overlay2
+	// - move temp dir holding overlay layer data to $storageRoot/overlay
+	// - edit container config to use overlay storage driver
 
 	logrus.Info("moving aufs images to overlay")
 	var (
@@ -259,6 +272,12 @@ func Migrate() error {
 	err = replicate(aufsImageDir, overlayImageDir)
 	if err != nil {
 		return fmt.Errorf("Error moving images from aufs to overlay: %v", err)
+	}
+
+	logrus.Info("moving layer data from temporary location to overlay2 root")
+	err = os.Rename(tempTargetRoot(), overlayRoot())
+	if err != nil {
+		return fmt.Errorf("Error moving from temporary root: %v", err)
 	}
 
 	containerDir := filepath.Join(StorageRoot, "containers")

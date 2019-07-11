@@ -20,7 +20,7 @@ $ a2o-migrate -migrate
 
 Run some containers, verify everything works as expected and then:
 ```
-$ a2o-migrate -cleanup
+$ a2o-migrate -commit
 ```
 
 Or if something went wrong / you want to go back:

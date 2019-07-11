@@ -19,7 +19,7 @@ var ( // flag values
 	debug        = false
 	printVersion = false
 	runMigration = false
-	runCleanup   = false
+	runCommit    = false
 	runRollback  = false
 )
 
@@ -27,7 +27,7 @@ func Main() {
 	flag.BoolVar(&debug, "debug", debug, "enable debug logging")
 	flag.BoolVar(&printVersion, "version", printVersion, "print version")
 	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")
-	flag.BoolVar(&runCleanup, "cleanup", runCleanup, "cleanup leftover migration data")
+	flag.BoolVar(&runCommit, "commit", runCommit, "commit migration, removes aufs leftovers")
 	flag.BoolVar(&runRollback, "rollback", runRollback, "go back to aufs")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "usage: %s [flags]\n", os.Args[0])
@@ -62,8 +62,8 @@ func Main() {
 			os.Exit(1)
 		}
 
-	case runCleanup:
-		if err := a2o.Cleanup(); err != nil {
+	case runCommit:
+		if err := a2o.Commit(); err != nil {
 			logrus.Error(err)
 			os.Exit(1)
 		}
