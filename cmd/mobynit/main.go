@@ -3,11 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 
+	_ "github.com/docker/docker/daemon/graphdriver/aufs"
 	_ "github.com/docker/docker/daemon/graphdriver/overlay2"
 	"github.com/docker/docker/layer"
 	"github.com/docker/docker/pkg/idtools"
@@ -16,17 +19,16 @@ import (
 )
 
 const (
-	LAYER_ROOT   = "/balena"
-	PIVOT_PATH   = "/mnt/sysroot/active"
-	GRAPH_DRIVER = "overlay2"
+	LAYER_ROOT = "/balena"
+	PIVOT_PATH = "/mnt/sysroot/active"
 )
 
-func mountContainer(layer_root, containerID string) string {
+func mountContainer(layer_root, containerID, graphDriver string) string {
 	ls, err := layer.NewStoreFromOptions(layer.StoreOptions{
 		Root:                      layer_root,
 		MetadataStorePathTemplate: filepath.Join(layer_root, "image", "%s", "layerdb"),
 		IDMapping:                 &idtools.IdentityMapping{},
-		GraphDriver:               GRAPH_DRIVER,
+		GraphDriver:               graphDriver,
 		OS:                        "linux",
 	})
 	if err != nil {
@@ -51,7 +53,7 @@ func mountContainer(layer_root, containerID string) string {
 	return newRootPath
 }
 
-func prepareForPivot(containerID string) string {
+func prepareForPivot(containerID, graphDriver string) string {
 	if err := os.MkdirAll("/dev/shm", os.ModePerm); err != nil {
 		log.Fatal("creating /dev/shm failed:", err)
 	}
@@ -61,7 +63,7 @@ func prepareForPivot(containerID string) string {
 	}
 	defer unix.Unmount("/dev/shm", unix.MNT_DETACH)
 
-	newRootPath := mountContainer(filepath.Join("", LAYER_ROOT), containerID)
+	newRootPath := mountContainer(filepath.Join("", LAYER_ROOT), containerID, graphDriver)
 
 	defer unix.Mount("", newRootPath, "", unix.MS_REMOUNT|unix.MS_RDONLY, "")
 
@@ -72,13 +74,20 @@ func prepareForPivot(containerID string) string {
 	return newRootPath
 }
 
-func getContainerID(sysroot string) string {
+func getStorageDriverAndContainerID(sysroot string) (string, string) {
+	rawGraphDriver, err := ioutil.ReadFile(filepath.Join(sysroot, "/current/boot/storage-driver"))
+	if err != nil {
+		log.Fatal("could not get storage driver:", err)
+	}
+	graphDriver := strings.TrimSpace(string(rawGraphDriver))
+
 	current, err := os.Readlink(filepath.Join(sysroot, "/current"))
 	if err != nil {
 		log.Fatal("could not get container ID:", err)
 	}
 	containerID := filepath.Base(current)
-	return containerID
+
+	return graphDriver, containerID
 }
 
 func main() {
@@ -91,21 +100,21 @@ func main() {
 		log.Fatal("could not get mounts:", err)
 	}
 
-	var containerID string
+	var graphDriver, containerID string
 
 	// If a custom sysroot is passed, use it instead of LAYER_ROOT
 	if *sysrootPtr != "" {
-		containerID = getContainerID(*sysrootPtr)
-		newRootPath := mountContainer(filepath.Join(*sysrootPtr, LAYER_ROOT), containerID)
+		graphDriver, containerID = getStorageDriverAndContainerID(*sysrootPtr)
+		newRootPath := mountContainer(filepath.Join(*sysrootPtr, LAYER_ROOT), containerID, graphDriver)
 		fmt.Print(newRootPath)
 	} else {
-		containerID = getContainerID("")
+		graphDriver, containerID = getStorageDriverAndContainerID("")
 
 		if err := unix.Mount("", "/", "", unix.MS_REMOUNT, ""); err != nil {
 			log.Fatal("error remounting root as read/write:", err)
 		}
 
-		newRoot := prepareForPivot(containerID)
+		newRoot := prepareForPivot(containerID, graphDriver)
 
 		for _, mount := range mounts {
 			if mount.Mountpoint == "/" {
