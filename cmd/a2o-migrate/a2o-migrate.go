@@ -16,11 +16,11 @@ var ( // auto generated on build
 )
 
 var ( // flag values
-	debug        = false
-	printVersion = false
-	runMigration = false
-	runCommit    = false
-	runRollback  = false
+	debug          = false
+	printVersion   = false
+	runMigration   = false
+	runCommit      = false
+	runFailCleanup = false
 )
 
 func Main() {
@@ -28,7 +28,7 @@ func Main() {
 	flag.BoolVar(&printVersion, "version", printVersion, "print version")
 	flag.BoolVar(&runMigration, "migrate", runMigration, "migrate from aufs to overlay")
 	flag.BoolVar(&runCommit, "commit", runCommit, "commit migration, removes aufs leftovers")
-	flag.BoolVar(&runRollback, "rollback", runRollback, "go back to aufs")
+	flag.BoolVar(&runFailCleanup, "fail-cleanup", runFailCleanup, "recover from a failed migration")
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "usage: %s [flags]\n", os.Args[0])
 		fmt.Fprintf(flag.CommandLine.Output(), "\nMigrate images, containers and daemon config files from aufs to overlay2...\n  while trying to not waste disk-space.\n")
@@ -68,8 +68,8 @@ func Main() {
 			os.Exit(1)
 		}
 
-	case runRollback:
-		if err := a2o.Rollback(); err != nil {
+	case runFailCleanup:
+		if err := a2o.FailCleanup(); err != nil {
 			logrus.Error(err)
 			os.Exit(1)
 		}

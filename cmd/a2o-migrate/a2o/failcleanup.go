@@ -7,12 +7,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Rollback should be run after a unsuccesful migration.
+// FailCleanup should be run after a failed migration.
 // It will remove any files left over from the migration process
 // and migrate containers back to aufs.
 //
-func Rollback() error {
-	logrus.Info("starting overlay2 -> aufs rollback")
+func FailCleanup() error {
+	logrus.Info("recovering from failed migration")
 
 	err := removeDirIfExists(tempTargetRoot())
 	if err != nil {

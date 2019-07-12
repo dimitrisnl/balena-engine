@@ -25,5 +25,5 @@ $ a2o-migrate -commit
 
 Or if something went wrong / you want to go back:
 ```
-$ a2o-migrate -rollback
+$ a2o-migrate -fail-cleanup
 ```
