@@ -1,39 +1,42 @@
-#!/bin/sh
+#!/bin/bash
 
-set -o errexit
+set -ex
 
-case "$(go env GOARCH)" in
-	"arm")
-		arch="armv$(go env GOARM)"
-		;;
-	"arm64")
-		arch="aarch64"
-		;;
-	"386")
-		arch="i386"
-		;;
-	"amd64")
-		arch="x86_64"
-		;;
-esac
+arch=${BUILD_ARCH:-$(uname -m)}
+version=${VERSION:-$(git describe --tags --always)}
+target=dynbinary-balena
 
-version=$(git describe --tags --always)
+# build env defaults
+export GOMAXPROCS=1
+export VERSION="$version"
+export DOCKER_LDFLAGS="-s" # strip resulting binary
 
-AUTO_GOPATH=1 GOMAXPROCS=1 DOCKER_LDFLAGS="-s" VERSION="$version" ./hack/make.sh binary-balena
+# overwrite defaults for a static build
+if [ -n "${BUILD_STATIC}" ]; then
+    target=binary-balena
+    version="$version-static"
+fi
 
-src="bundles/latest/binary-balena"
+# overwrite defaults when targeting balenaOS
+if [ -n "${BUILD_BALENAOS}" ]; then
+    export DOCKER_BUILDTAGS='exclude_graphdriver_btrfs exclude_graphdirver_zfs exclude_graphdriver_devicemapper no_btrfs'
+    version="$version-balenaos"
+fi
+
+src="bundles/latest/$target"
 dst="balena-engine"
 
-rm -rf "$dst"
-mkdir "$dst"
+# run the build
+(
+    rm -rf "$src/*" || true
+    ./hack/make.sh "$target"
+)
 
-cp -L "$src/balena-engine" "$dst/balena-engine"
+# pack the release artifacts
+(
+    rm -rf "$dst" || true
+    mkdir "$dst"
+    cp --no-dereference "$src"/balena-engine* "$dst/"
+    tar czfv "balena-engine-$version-$arch.tar.gz" "$dst"
+)
 
-ln -s balena-engine "$dst/balena-engine-daemon"
-ln -s balena-engine "$dst/balena-engine-containerd"
-ln -s balena-engine "$dst/balena-engine-containerd-ctr"
-ln -s balena-engine "$dst/balena-engine-containerd-shim"
-ln -s balena-engine "$dst/balena-engine-proxy"
-ln -s balena-engine "$dst/balena-engine-runc"
-
-tar czfv "balena-engine-$version-$arch.tar.gz" "$dst"
