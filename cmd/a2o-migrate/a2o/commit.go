@@ -23,12 +23,5 @@ func Commit() error {
 		return err
 	}
 
-	// remove hostapps
-	hostappsDir := filepath.Join(StorageRoot, "hostapps")
-	err = removeDirIfExists(hostappsDir)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
