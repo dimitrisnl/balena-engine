@@ -35,9 +35,7 @@ func Migrate() error {
 		}
 	}
 
-	var (
-		state State
-	)
+	var state State
 
 	diffDir := filepath.Join(aufsRoot(), "diff")
 
