@@ -30,7 +30,7 @@ func FailCleanup() error {
 		return err
 	}
 
-	err = switchAllContainersStorageDriver("aufs")
+	err = SwitchAllContainersStorageDriver("aufs")
 	if err != nil {
 		return fmt.Errorf("Error migrating containers to aufs: %v", err)
 	}

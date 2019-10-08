@@ -12,15 +12,15 @@ import (
 	"github.com/docker/docker/cmd/a2o-migrate/osutil"
 )
 
-func switchAllContainersStorageDriver(newStorageDriver string) error {
+func SwitchAllContainersStorageDriver(newStorageDriver string) error {
 	containerDir := filepath.Join(StorageRoot, "containers")
 	containerIDs, err := osutil.LoadIDs(containerDir)
 	if err != nil {
 		return fmt.Errorf("Error listing containers: %v", err)
 	}
-	logrus.Infof("migrating %v container(s) to overlay2", len(containerIDs))
+	logrus.Infof("migrating %v container(s) to %s", len(containerIDs), newStorageDriver)
 	for _, containerID := range containerIDs {
-		err := switchContainerStorageDriver(containerID, "overlay2")
+		err := switchContainerStorageDriver(containerID, newStorageDriver)
 		if err != nil {
 			return fmt.Errorf("Error rewriting container config for %s: %v", containerID, err)
 		}
@@ -44,7 +44,7 @@ func switchContainerStorageDriver(containerID, newStorageDriver string) error {
 	if err != nil {
 		return err
 	}
-	containerConfig["Driver"] = "overlay2"
+	containerConfig["Driver"] = newStorageDriver
 
 	err = f.Truncate(0)
 	if err != nil {

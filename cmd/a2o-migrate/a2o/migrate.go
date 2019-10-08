@@ -278,7 +278,7 @@ func Migrate() error {
 		return fmt.Errorf("Error moving from temporary root: %v", err)
 	}
 
-	err = switchAllContainersStorageDriver("overlay2")
+	err = SwitchAllContainersStorageDriver("overlay2")
 	if err != nil {
 		return fmt.Errorf("Error migrating containers to overlay2: %v", err)
 	}
