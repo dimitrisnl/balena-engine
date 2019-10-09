@@ -11,7 +11,7 @@ test-unit:
 	go test -cover -v ./...
 
 test-integration: a2o-migrate
-	env CONTAINERIZED=1 ./test/integration.sh
+	./test/integration.sh
 
 legacy:
 	$(RUNTIME) run --rm -it \
