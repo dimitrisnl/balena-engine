@@ -1,8 +1,9 @@
 PWD := $(shell pwd)
+VERSION ?= $(shell git describe --tag --always)
 
-GO_BUILDINFO=-X main.GitVersion=$(shell git describe --tag --always) -X main.BuildTime=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+GO_BUILDINFO=-X main.GitVersion=$(VERSION) -X main.BuildTime=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 GO_LDFLAGS=-extldflags "-fno-PIC -static"
-GO_BUILDFLAGS=-ldflags '$(GO_LDFLAGS) $(GO_BUILDINFO)' -buildmode pie -tags 'osusergo netgo static_build'
+GO_BUILDFLAGS=-ldflags '$(GO_LDFLAGS) $(GO_BUILDINFO)' -tags 'osusergo netgo static_build'
 
 a2o-migrate: clean
 	go build $(GO_BUILDFLAGS) -o ./$@ ./cli
