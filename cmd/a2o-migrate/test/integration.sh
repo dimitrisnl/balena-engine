@@ -11,18 +11,7 @@ balena_container_flags="--rm --detach --name ${container_name} --privileged -v v
 set -ex
 
 [ -n "$CONTAINERIZED" ] && {
-
-    cat /etc/os-release
-    balena-engine info || exit 1
-
-    # ls -lR /var/lib/balena-engine/
-
-    ./a2o-migrate -version
-    ./a2o-migrate -debug -migrate
-
-    # ls -lR /var/lib/balena-engine/
-
-    exit 0
+    exec ${PROJECT}/test/integration-test.sh
 }
 
 test_out_dir=$(mktemp -d /tmp/a2o-migrate_test_XXXX)
