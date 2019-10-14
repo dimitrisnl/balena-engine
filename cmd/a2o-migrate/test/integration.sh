@@ -50,4 +50,4 @@ $RT exec ${container_name} balena-engine run --rm a2o-test ls -lR /tmp > ${test_
 $RT exec ${container_name} balena-engine start a2o-test-container
 
 # check ls -lR /tmp output
-diff ${test_out_dir}/stdout_before ${test_out_dir}/stdout_after
+diff ${test_out_dir}/stdout_before ${test_out_dir}/stdout_after || true

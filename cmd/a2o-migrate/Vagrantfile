@@ -19,10 +19,7 @@ Vagrant.configure("2") do |config|
     type: "rsync"
     # rsync__rsync_path: "rsync"
 
-  config.vm.provision "shell", privileged: false, inline: "balena build -t balena/balena-engine:beind /mnt/data/beind"
-  config.vm.provision "shell", privileged: false, inline: "balena run --rm -t -e GOPROXY=https://proxy.golang.org -e VERSION=unsupported -v /mnt/data/vagrant:/go/src -w /go/src golang:1.13-alpine ash -c 'apk add make; CGO_ENABLED=0 make test-unit a2o-migrate'"
-
-  if ENV["A2O_AUTOTEST"] <=> "true"
-    config.vm.provision "shell", privileged: false, inline: "cd /mnt/data/vagrant; ./test/integration.sh"
-  end
+  config.vm.provision "shell", name: "beind-container", privileged: false, inline: "balena build -t balena/balena-engine:beind /mnt/data/beind"
+  config.vm.provision "shell", name: "a2o-bin", privileged: false, inline: "balena run --rm -t -e GOPROXY=https://proxy.golang.org -e VERSION=unsupported -v /mnt/data/vagrant:/go/src -w /go/src golang:1.13-alpine ash -c 'apk add make; CGO_ENABLED=0 make test-unit a2o-migrate'"
+  config.vm.provision "shell", name: "test", privileged: false, inline: "cd /mnt/data/vagrant; ./test/integration.sh"
 end
