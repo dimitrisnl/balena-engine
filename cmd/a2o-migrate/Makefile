@@ -1,7 +1,8 @@
 PWD := $(shell pwd)
 VERSION ?= $(shell git describe --tag --always)
 
-GO_BUILDINFO=-X main.GitVersion=$(VERSION) -X main.BuildTime=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+PROJECT=github.com/docker/docker/cmd/a2o-migrate
+GO_BUILDINFO=-X $(PROJECT).gitVersion=$(VERSION) -X $(PROJECT).buildTime=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 GO_LDFLAGS=-extldflags "-fno-PIC -static"
 GO_BUILDFLAGS=-ldflags '$(GO_LDFLAGS) $(GO_BUILDINFO)' -tags 'osusergo netgo static_build'
 

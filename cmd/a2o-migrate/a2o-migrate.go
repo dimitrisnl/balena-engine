@@ -11,8 +11,8 @@ import (
 )
 
 var ( // auto generated on build
-	GitVersion = "undefined"
-	BuildTime  = "undefined"
+	gitVersion = "undefined"
+	buildTime  = "undefined"
 )
 
 var ( // flag values
@@ -53,7 +53,7 @@ func Main() {
 
 	switch {
 	case printVersion:
-		fmt.Fprintf(os.Stdout, "a2o-migrate version %s (build %s)\n", GitVersion, BuildTime)
+		fmt.Fprintf(os.Stdout, "a2o-migrate version %s (build %s)\n", gitVersion, buildTime)
 		os.Exit(0)
 
 	case runMigration:
