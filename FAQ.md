@@ -1,5 +1,3 @@
-# FAQ
-
 ## What is the Moby Project?
 
 As described by Docker, the Moby Project is “an open framework to assemble specialized container systems.” You can read more at [the moby project website](https://mobyproject.org/) and [moby project introduction post](https://blog.docker.com/2017/04/introducing-the-moby-project/).
