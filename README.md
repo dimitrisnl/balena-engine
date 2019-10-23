@@ -1,7 +1,4 @@
-balenaEngine: Moby-based container engine for IoT
-=================================================
-
-<img src="docs/static_files/balena-engine.svg" alt="balenaEngine" width="50%" />
+![Balena engine](https://raw.githubusercontent.com/balena-os/balena-engine/master/docs/balena-engine.svg)
 
 ## Overview
 
@@ -13,18 +10,12 @@ atomicity and durability of container pulling.
 
 ## Features
 
-- __Small footprint__
-	- 3.5x smaller than Docker CE, packaged as a single binary
-- __Multi-arch support__
-	- Available for a wide variety of chipset architectures, supporting everything from tiny IoT devices to large industrial gateways
-- __True container deltas__
-	- Bandwidth-efficient updates with binary diffs, 10-70x smaller than pulling layers
-- __Minimal wear-and-tear__
-	- Extract layers as they arrive to prevent excessive writing to disk, protecting your storage from eventual corruption
-- __Failure-resistant pulls__
-	- Atomic and durable image pulls defend against partial container pulls in the event of power failure
-- __Conservative memory use__
-	- Prevents page cache thrashing during image pull, so your application runs undisturbed in low-memory situations
+- **Small footprint**: 3.5x smaller than Docker CE, packaged as a single binary
+- **Multi-arch support**: Available for a wide variety of chipset architectures, supporting everything from tiny IoT devices to large industrial gateways
+- **True container deltas**: Bandwidth-efficient updates with binary diffs, 10-70x smaller than pulling layers
+- **Minimal wear-and-tear**: Extract layers as they arrive to prevent excessive writing to disk, protecting your storage from eventual corruption
+- **Failure-resistant pulls**: Atomic and durable image pulls defend against partial container pulls in the event of power failure
+- **Conservative memory use**: Prevents page cache thrashing during image pull, so your application runs undisturbed in low-memory situations
 
 ## Transitioning from Docker CE
 
