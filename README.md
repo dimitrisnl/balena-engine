@@ -8,7 +8,7 @@ supports container deltas for 10-70x more efficient bandwidth usage, has 3x
 smaller binaries, uses RAM and storage more conservatively, and focuses on
 atomicity and durability of container pulling.
 
-## Features
+## Highlights
 
 - **Small footprint**: 3.5x smaller than Docker CE, packaged as a single binary
 - **Multi-arch support**: Available for a wide variety of chipset architectures, supporting everything from tiny IoT devices to large industrial gateways
