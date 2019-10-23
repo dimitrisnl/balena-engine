@@ -1,4 +1,4 @@
-![Balena engine](https://raw.githubusercontent.com/balena-os/balena-engine/master/docs/balena-engine.svg)
+![Balena engine](https://raw.githubusercontent.com/balena-os/balena-engine/master/docs/static_files/balena-engine.svg)
 
 ## Overview
 
